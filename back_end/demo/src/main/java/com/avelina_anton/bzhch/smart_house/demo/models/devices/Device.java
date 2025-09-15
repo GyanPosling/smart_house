@@ -21,7 +21,10 @@ public abstract class Device {
     private DeviceStatus status;
 
     @Enumerated(EnumType.STRING)
-    private DeviceType type;
+    private DeviceType deviceType;
+
+    @Enumerated(EnumType.STRING)
+    private DeviceMode deviceMode;
 
     private int powerLevel;
     private boolean isConnected;
@@ -33,4 +36,5 @@ public abstract class Device {
     public abstract String getDeviceType();
     public abstract String getStatus();
     public abstract String getStatusDescription();
+    public abstract DeviceMode getMode();
 }
