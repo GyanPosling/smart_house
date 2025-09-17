@@ -8,8 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface DevicesRepository extends JpaRepository<Device, Integer> {
+public interface DevicesRepository extends JpaRepository<Device, Long> { // Изменено на Long
     Optional<Device> findById(Long deviceId);
-    List<Device> findByType(DeviceType type);
-    List<Device> findByTypeAndStatus(DeviceType type, DeviceStatus status);
+    List<Device> findByDeviceType(DeviceType type); // Изменено название метода
+    List<Device> findByDeviceTypeAndStatus(DeviceType type, DeviceStatus status); // Изменено название метода
+    List<Device> findByUser_Id(Long userId); // Для поиска по пользователю
 }
