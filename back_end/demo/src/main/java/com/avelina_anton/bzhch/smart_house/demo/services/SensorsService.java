@@ -20,6 +20,10 @@ public class SensorsService {
     }
 
     public Optional<Sensor> getSensorByType(SensorType type) {
+        return sensorsRepository.findByType(type).stream().findFirst();
+    }
+
+    public List<Sensor> getSensorsByType(SensorType type) {
         return sensorsRepository.findByType(type);
     }
 
@@ -33,5 +37,9 @@ public class SensorsService {
 
     public Optional<Sensor> getSensorById(Long id) {
         return sensorsRepository.findById(id);
+    }
+
+    public void deleteSensor(Long id) {
+        sensorsRepository.deleteById(id);
     }
 }

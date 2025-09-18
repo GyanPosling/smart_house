@@ -5,10 +5,13 @@ import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface SensorsRepository extends JpaRepository<Sensor, Long> {
 
-    Optional<Sensor> findByType(SensorType type);
+    List<Sensor> findByType(SensorType type);
+    Optional<Sensor> findFirstByType(SensorType type);
+
 }

@@ -10,7 +10,13 @@ import java.util.Optional;
 
 public interface DevicesRepository extends JpaRepository<Device, Long> { // Изменено на Long
     Optional<Device> findById(Long deviceId);
+
     List<Device> findByDeviceType(DeviceType type); // Изменено название метода
+
     List<Device> findByDeviceTypeAndStatus(DeviceType type, DeviceStatus status); // Изменено название метода
-    List<Device> findByUser_Id(Long userId); // Для поиска по пользователю
+
+    List<Device> findByUser_Id(Long userId);
+
+    List<Device> findByType(DeviceType type);
+    Optional <Device> findFirstByType(DeviceType type);
 }

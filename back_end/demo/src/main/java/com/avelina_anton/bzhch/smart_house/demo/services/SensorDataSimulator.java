@@ -19,7 +19,7 @@ public class SensorDataSimulator {
     }
 
     private void saveOrUpdateSensor(SensorType type, double value) {
-        sensorsRepository.findByType(type).ifPresentOrElse(
+        sensorsRepository.findFirstByType(type).ifPresentOrElse(
                 sensor -> {
                     sensor.setValue(value);
                     sensorsRepository.save(sensor);

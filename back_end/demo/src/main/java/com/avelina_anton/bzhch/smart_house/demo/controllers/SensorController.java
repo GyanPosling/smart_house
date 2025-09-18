@@ -1,14 +1,14 @@
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
-
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
 import com.avelina_anton.bzhch.smart_house.demo.services.SensorsService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/smart_house/sensors")
@@ -27,25 +27,29 @@ public class SensorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Sensor> getSensorById(@PathVariable Long id) {
-        Optional<Sensor> sensor = sensorsService.getSensorById(id);
-        return sensor.map(ResponseEntity::ok)
+        return sensorsService.getSensorById(id)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/type/{type}")
-    public ResponseEntity<Sensor> getSensorByType(@PathVariable SensorType type) {
-        Optional<Sensor> sensor = sensorsService.getSensorByType(type);
-        return sensor.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public List<Sensor> getSensorsByType(@PathVariable SensorType type) {
+        return sensorsService.getSensorsByType(type);
     }
 
     @PostMapping
-    public Sensor createSensor(@RequestBody Sensor sensor) {
-        return sensorsService.saveSensor(sensor);
+    public ResponseEntity<Sensor> createSensor(@Valid @RequestBody Sensor sensor) {
+        if (sensor.getValue() < 0 || sensor.getType() == null || sensor.getLocation() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.status(201).body(sensorsService.saveSensor(sensor));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Sensor> updateSensor(@PathVariable Long id, @RequestBody Sensor sensorDetails) {
+    public ResponseEntity<Sensor> updateSensor(@PathVariable Long id, @Valid @RequestBody Sensor sensorDetails) {
+        if (sensorDetails.getValue() < 0 || sensorDetails.getType() == null || sensorDetails.getLocation() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return sensorsService.getSensorById(id)
                 .map(existingSensor -> {
                     existingSensor.setType(sensorDetails.getType());
@@ -59,7 +63,7 @@ public class SensorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSensor(@PathVariable Long id) {
         if (sensorsService.getSensorById(id).isPresent()) {
-            sensorsService.getSensorById(id); // В реальности нужно добавить метод delete
+            sensorsService.deleteSensor(id);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
