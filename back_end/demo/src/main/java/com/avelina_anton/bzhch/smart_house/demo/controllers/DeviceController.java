@@ -103,6 +103,7 @@ public class DeviceController {
                 .map(existingDevice -> {
                     Device device = modelMapper.map(deviceDTO, Device.class);
                     device.setId(id);
+
                     Device updatedDevice = devicesService.save(device);
                     return ResponseEntity.ok(modelMapper.map(updatedDevice, DeviceDTO.class));
                 })

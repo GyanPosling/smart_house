@@ -66,6 +66,7 @@ public class DevicesService {
         if (device.equals(DeviceStatus.OFF)) {
             return device;
         }
+
         device.setStatus(DeviceStatus.OFF);
         device.setDeviceMode(DeviceMode.MANUAL);
         return devicesRepository.save(device);

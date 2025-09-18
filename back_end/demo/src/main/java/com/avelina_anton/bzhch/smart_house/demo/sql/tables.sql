@@ -16,6 +16,7 @@ CREATE TABLE Devices (
 );
 
 
+
 CREATE TABLE Sensors (
     id int primary key generated always as identity,
     type VARCHAR(50) NOT NULL CHECK (type IN ('TEMPERATURE', 'HUMIDITY', 'CO2', 'NOISE')),

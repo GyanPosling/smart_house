@@ -109,6 +109,7 @@ public class AutomationService {
         }
     }
 
+
     private void turnOnIfManualModeNotSet(Device device) {
         if (device.getMode() == null || device.getMode() == DeviceMode.AUTO) {
             device.setStatus(DeviceStatus.ON);

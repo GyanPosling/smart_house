@@ -24,6 +24,7 @@ public class SensorDataSimulator {
                     sensor.setValue(value);
                     sensorsRepository.save(sensor);
                 },
+
                 () -> {
                     Sensor newSensor = new Sensor();
                     newSensor.setType(type);

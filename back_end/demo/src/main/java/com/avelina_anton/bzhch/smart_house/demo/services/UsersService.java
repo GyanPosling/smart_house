@@ -49,6 +49,7 @@ public class UsersService {
         usersRepository.deleteById(id);
     }
 
+
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }

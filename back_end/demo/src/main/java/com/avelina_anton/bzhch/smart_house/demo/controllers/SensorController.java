@@ -32,6 +32,7 @@ public class SensorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @GetMapping("/type/{type}")
     public List<Sensor> getSensorsByType(@PathVariable SensorType type) {
         return sensorsService.getSensorsByType(type);

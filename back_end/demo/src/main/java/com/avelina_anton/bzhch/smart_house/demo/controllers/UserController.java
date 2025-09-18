@@ -31,11 +31,13 @@ public class UserController {
         return usersService.getAllUsers().stream()
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
+
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         if (id <= 0) {
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
         }
         return usersService.findUserById(id)
