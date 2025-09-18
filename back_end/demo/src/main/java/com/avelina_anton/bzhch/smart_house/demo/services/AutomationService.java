@@ -107,6 +107,7 @@ public class AutomationService {
             logger.info("CO2 в норме, выключаем вентиляторы");
             ventilators.forEach(this::turnOffIfManualModeNotSet);
         }
+
     }
 
 

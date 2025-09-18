@@ -12,6 +12,7 @@ import java.util.Optional;
 @Service
 public class SensorsService {
 
+
     private final SensorsRepository sensorsRepository;
 
     @Autowired

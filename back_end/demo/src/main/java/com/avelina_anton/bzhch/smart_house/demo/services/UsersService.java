@@ -30,6 +30,7 @@ public class UsersService {
         return usersRepository.findByEmail(email);
     }
 
+
     public Optional<User> findUserById(Integer id) {
         return usersRepository.findById(id);
     }

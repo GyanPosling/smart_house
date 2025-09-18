@@ -33,6 +33,7 @@ public class SensorController {
     }
 
 
+
     @GetMapping("/type/{type}")
     public List<Sensor> getSensorsByType(@PathVariable SensorType type) {
         return sensorsService.getSensorsByType(type);

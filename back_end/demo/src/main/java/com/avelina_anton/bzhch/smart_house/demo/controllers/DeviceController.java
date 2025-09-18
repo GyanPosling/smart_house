@@ -110,6 +110,7 @@ public class DeviceController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Устройство не найдено"));
     }
 
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDevice(@PathVariable Long id) {
         if (id <= 0) {

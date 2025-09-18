@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/smart_house/users")
 public class UserController {
 
+
     private final UsersService usersService;
     private final ModelMapper modelMapper;
 

@@ -13,6 +13,7 @@ public interface DevicesRepository extends JpaRepository<Device, Long> { // Из
 
     List<Device> findByDeviceType(DeviceType type); // Изменено название метода
 
+
     List<Device> findByDeviceTypeAndStatus(DeviceType type, DeviceStatus status); // Изменено название метода
 
     List<Device> findByUser_Id(Long userId);

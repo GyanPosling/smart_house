@@ -56,7 +56,6 @@ public class DevicesService {
         device.setDeviceMode(DeviceMode.MANUAL);
         return devicesRepository.save(device);
     }
-
     public Device turnOffDevice(Long deviceId) {
         Optional<Device> deviceOpt = devicesRepository.findById(deviceId);
         if (deviceOpt.isEmpty()) {

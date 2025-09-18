@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface SensorsRepository extends JpaRepository<Sensor, Long> {
 
     List<Sensor> findByType(SensorType type);
+
     Optional<Sensor> findFirstByType(SensorType type);
 
 }

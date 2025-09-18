@@ -42,7 +42,6 @@ public class SensorDataSimulator {
         double humidityValue = 20.0 + (60.0 - 20.0) * random.nextDouble();
         saveOrUpdateSensor(SensorType.HUMIDITY, humidityValue);
 
-
         double co2Value = 400.0 + (1500.0 - 400.0) * random.nextDouble();
         saveOrUpdateSensor(SensorType.CO2, co2Value);
 
