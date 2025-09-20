@@ -1,3 +1,4 @@
+// UsersService.java
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
@@ -11,7 +12,6 @@ import java.util.Optional;
 
 @Service
 public class UsersService {
-
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -30,8 +30,7 @@ public class UsersService {
         return usersRepository.findByEmail(email);
     }
 
-
-    public Optional<User> findUserById(Integer id) {
+    public Optional<User> findUserById(Long id) {
         return usersRepository.findById(id);
     }
 
@@ -46,10 +45,9 @@ public class UsersService {
         return usersRepository.save(user);
     }
 
-    public void deleteUser(Integer id) {
+    public void deleteUser(Long id) {
         usersRepository.deleteById(id);
     }
-
 
     public boolean validatePassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);

@@ -1,3 +1,4 @@
+// DevicesService.java
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
@@ -16,7 +17,6 @@ import java.util.Optional;
 @Service
 @Transactional
 public class DevicesService {
-
     private final DevicesRepository devicesRepository;
 
     @Autowired
@@ -33,7 +33,7 @@ public class DevicesService {
     }
 
     public Device save(Device device) {
-        if (device == null || device.getDeviceType() == null) {
+        if (device == null || device.getType() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid device data");
         }
         return devicesRepository.save(device);
@@ -44,40 +44,36 @@ public class DevicesService {
     }
 
     public Device turnOnDevice(Long deviceId) {
-        Optional<Device> deviceOpt = devicesRepository.findById(deviceId);
-        if (deviceOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found");
+        Device device = devicesRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        if (device.getStatus() == DeviceStatus.ON) {
+            return device;
         }
-        Device device = deviceOpt.get();
-        if (device.equals(DeviceStatus.ON)) {
-            return device; // Уже включено, ничего не делаем
-        }
+
         device.setStatus(DeviceStatus.ON);
-        device.setDeviceMode(DeviceMode.MANUAL);
+        device.setMode(DeviceMode.MANUAL);
         return devicesRepository.save(device);
     }
+
     public Device turnOffDevice(Long deviceId) {
-        Optional<Device> deviceOpt = devicesRepository.findById(deviceId);
-        if (deviceOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found");
-        }
-        Device device = deviceOpt.get();
-        if (device.equals(DeviceStatus.OFF)) {
+        Device device = devicesRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        if (device.getStatus() == DeviceStatus.OFF) {
             return device;
         }
 
         device.setStatus(DeviceStatus.OFF);
-        device.setDeviceMode(DeviceMode.MANUAL);
+        device.setMode(DeviceMode.MANUAL);
         return devicesRepository.save(device);
     }
 
     public Device setAutomationMode(Long deviceId) {
-        Optional<Device> deviceOpt = devicesRepository.findById(deviceId);
-        if (deviceOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found");
-        }
-        Device device = deviceOpt.get();
-        device.setDeviceMode(DeviceMode.AUTO);
+        Device device = devicesRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        device.setMode(DeviceMode.AUTO);
         return devicesRepository.save(device);
     }
 

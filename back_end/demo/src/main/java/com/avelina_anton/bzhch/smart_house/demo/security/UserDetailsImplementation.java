@@ -15,6 +15,7 @@ public class UserDetailsImplementation implements UserDetails {
     public UserDetailsImplementation(final User user) {
         this.user = user;
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();

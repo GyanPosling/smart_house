@@ -5,6 +5,5 @@ public enum DeviceType {
     AIR_CONDITIONER,
     HUMIDIFIER,
     DEHUMIDIFIER,
-    AIR_PURIFIER,
-    VENTILATOR,
+    VENTILATOR
 }

@@ -1,3 +1,4 @@
+// Device.java
 package com.avelina_anton.bzhch.smart_house.demo.models.devices;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
@@ -6,35 +7,54 @@ import lombok.Data;
 
 @Data
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "device_type")
 @Table(name = "devices")
-public abstract class Device {
+public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-//    private String location;
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private DeviceStatus status;
 
     @Enumerated(EnumType.STRING)
-    private DeviceType deviceType;
+    private DeviceType type;
 
     @Enumerated(EnumType.STRING)
-    private DeviceMode deviceMode;
+    private DeviceMode mode;
 
     private int powerLevel;
     private boolean isConnected;
+
+    private Integer targetTemperature;
+    private Integer currentTemperature;
+    private Integer targetHumidity;
+    private Integer currentHumidity;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    public abstract String getDeviceType();
-    public abstract String getStatus();
-    public abstract String getStatusDescription();
-    public abstract DeviceMode getMode();
+    public String getStatusDescription() {
+        switch (type) {
+            case HEATER:
+                return "Обогреватель " + name + ": " + status + ", темп.: " + currentTemperature + "°C";
+            case AIR_CONDITIONER:
+                return "Кондиционер " + name + ": " + status + ", темп.: " + currentTemperature + "°C";
+            case HUMIDIFIER:
+                return "Увлажнитель " + name + ": " + status + ", влажность: " + currentHumidity + "%";
+            default:
+                return type + " " + name + ": " + status;
+        }
+    }
+
+    public boolean supportsTemperatureControl() {
+        return type == DeviceType.HEATER || type == DeviceType.AIR_CONDITIONER;
+    }
+
+    public boolean supportsHumidityControl() {
+        return type == DeviceType.HUMIDIFIER || type == DeviceType.DEHUMIDIFIER;
+    }
 }

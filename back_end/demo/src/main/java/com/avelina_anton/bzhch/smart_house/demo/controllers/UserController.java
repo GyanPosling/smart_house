@@ -1,3 +1,4 @@
+// UserController.java
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.dto.UserDTO;
@@ -10,15 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/smart_house/users")
 public class UserController {
-
-
     private final UsersService usersService;
     private final ModelMapper modelMapper;
 
@@ -32,13 +30,11 @@ public class UserController {
         return usersService.getAllUsers().stream()
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
-
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         if (id <= 0) {
-
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
         }
         return usersService.findUserById(id)
@@ -58,7 +54,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
         }
@@ -73,7 +69,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
         }

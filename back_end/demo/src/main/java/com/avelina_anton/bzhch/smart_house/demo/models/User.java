@@ -1,3 +1,4 @@
+// User.java
 package com.avelina_anton.bzhch.smart_house.demo.models;
 
 import jakarta.persistence.*;
@@ -8,27 +9,22 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "User")
+@Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+    private Long id;
 
-    @Column(name = "name")
+    @Column(unique = true)
     @NotEmpty
-    @Size(min = 2, max = 50, message = "name should be greater than 2 and less than 50")
+    @Size(min = 2, max = 50)
     private String name;
 
     @NotEmpty
-    @Size(min = 5, max = 100, message = "Password should be greater than 5 and less than 100")
-    @Column(name = "password")
+    @Size(min = 5, max = 100)
     private String password;
 
-    @Column(name = "email")
+    @Column(unique = true)
     @Email
     private String email;
-
-
 }

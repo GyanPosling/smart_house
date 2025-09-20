@@ -11,16 +11,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Component
-public class JwtAuthenticationFilter {
-    @Autowired
-    private JwtUtils jwtUtils;
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
+    private JwtUtils jwtUtils;
     private CustomUserDetailsService customUserDetailsService;
+
+    public JwtAuthenticationFilter(JwtUtils jwtUtils,
+                                   CustomUserDetailsService customUserDetailsService) {
+        this.jwtUtils = jwtUtils;
+        this.customUserDetailsService = customUserDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,13 +37,11 @@ public class JwtAuthenticationFilter {
         String username = null;
         String jwt = null;
 
-        // Проверяем, что заголовок Authorization есть и начинается с Bearer
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             username = jwtUtils.getUsernameFromJwt(jwt);
         }
 
-        // Если юзер ещё не аутентифицирован и токен валидный → авторизуем
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
@@ -50,7 +53,6 @@ public class JwtAuthenticationFilter {
                                 userDetails.getAuthorities()
                         );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

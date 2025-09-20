@@ -1,8 +1,8 @@
+// DeviceController.java
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.dto.DeviceDTO;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
-import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 import com.avelina_anton.bzhch.smart_house.demo.services.DevicesService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/smart_house/devices")
 public class DeviceController {
-
     private final DevicesService devicesService;
     private final ModelMapper modelMapper;
 
@@ -103,13 +102,11 @@ public class DeviceController {
                 .map(existingDevice -> {
                     Device device = modelMapper.map(deviceDTO, Device.class);
                     device.setId(id);
-
                     Device updatedDevice = devicesService.save(device);
                     return ResponseEntity.ok(modelMapper.map(updatedDevice, DeviceDTO.class));
                 })
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Устройство не найдено"));
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDevice(@PathVariable Long id) {
