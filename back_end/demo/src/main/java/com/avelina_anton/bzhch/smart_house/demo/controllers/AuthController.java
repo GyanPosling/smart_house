@@ -5,6 +5,7 @@ import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.UsersRepository;
 import com.avelina_anton.bzhch.smart_house.demo.security.JwtUtils;
 import com.avelina_anton.bzhch.smart_house.demo.services.CustomUserDetailsService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user) {
         if (usersRepository.existsByName(user.getName())) {
             return ResponseEntity.badRequest().body("Username already taken");
         }

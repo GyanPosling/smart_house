@@ -57,4 +57,6 @@ public class Device {
     public boolean supportsHumidityControl() {
         return type == DeviceType.HUMIDIFIER || type == DeviceType.DEHUMIDIFIER;
     }
+
+
 }

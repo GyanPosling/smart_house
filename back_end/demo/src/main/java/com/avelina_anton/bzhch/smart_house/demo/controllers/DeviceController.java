@@ -2,8 +2,10 @@
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.dto.DeviceDTO;
+import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 import com.avelina_anton.bzhch.smart_house.demo.services.DevicesService;
+import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -19,10 +21,12 @@ import java.util.stream.Collectors;
 public class DeviceController {
     private final DevicesService devicesService;
     private final ModelMapper modelMapper;
+    private final UsersService usersService;
 
-    public DeviceController(DevicesService devicesService, ModelMapper modelMapper) {
+    public DeviceController(DevicesService devicesService, ModelMapper modelMapper, UsersService usersService) {
         this.devicesService = devicesService;
         this.modelMapper = modelMapper;
+        this.usersService = usersService;
     }
 
     @GetMapping
@@ -52,6 +56,24 @@ public class DeviceController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(modelMapper.map(savedDevice, DeviceDTO.class));
     }
+
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<DeviceDTO> addUserDevice(@PathVariable Long userId, @Valid @RequestBody DeviceDTO deviceDTO) {
+        if (deviceDTO.getType() == null || deviceDTO.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Тип и имя устройства обязательны");
+        }
+
+        User user = usersService.findUserById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
+
+        Device device = modelMapper.map(deviceDTO, Device.class);
+        device.setUser(user);
+
+        Device savedDevice = devicesService.save(device);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(modelMapper.map(savedDevice, DeviceDTO.class));
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<DeviceDTO> getDeviceById(@PathVariable Long id) {

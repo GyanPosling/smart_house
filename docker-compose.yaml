@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: smart_house_db
+    environment:
+      POSTGRES_DB: smart_house_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Zz3741205
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smart_house_network
+
+  # Бэкенд Spring Boot приложение
+  backend:
+    build:
+      context: ./back_end
+      dockerfile: Dockerfile
+    container_name: smart_house_backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smart_house_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Zz3741205
+      JWT_SECRET: MySuperSecretKey123456789012345678901234567890
+      JWT_EXPIRATION_MS: "3600000"
+    depends_on:
+      - postgres
+    networks:
+      - smart_house_network
+
+networks:
+  smart_house_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
