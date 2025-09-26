@@ -3,6 +3,7 @@ package com.avelina_anton.bzhch.smart_house.demo.servicesTest;
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.SensorsRepository;
+import com.avelina_anton.bzhch.smart_house.demo.services.SensorsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
