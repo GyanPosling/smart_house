@@ -30,3 +30,4 @@ CREATE TABLE devices (
     current_humidity INTEGER,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
 );
+
