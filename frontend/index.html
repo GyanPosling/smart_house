@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart House Test Client</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Smart House Test Client</h1>
+
+    <!-- Auth Section -->
+    <div id="auth-section">
+        <h2>Authentication</h2>
+        <div id="register-form">
+            <h3>Register</h3>
+            <input type="text" id="register-name" placeholder="Name">
+            <input type="email" id="register-email" placeholder="Email">
+            <input type="password" id="register-password" placeholder="Password">
+            <button onclick="register()">Register</button>
+        </div>
+        <div id="login-form">
+            <h3>Login</h3>
+            <input type="text" id="login-name" placeholder="Name">
+            <input type="password" id="login-password" placeholder="Password">
+            <button onclick="login()">Login</button>
+        </div>
+        <p id="auth-message"></p>
+    </div>
+
+    <!-- Devices Section -->
+    <div id="devices-section" style="display: none;">
+        <h2>Devices</h2>
+        <table id="devices-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Mode</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="devices-table-body"></tbody>
+        </table>
+    </div>
+
+    <!-- Sensors Section -->
+    <div id="sensors-section" style="display: none;">
+        <h2>Sensors</h2>
+        <table id="sensors-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Location</th>
+            </tr>
+            </thead>
+            <tbody id="sensors-table-body"></tbody>
+        </table>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

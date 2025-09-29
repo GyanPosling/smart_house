@@ -1,42 +1,46 @@
-version: '3.8'
 services:
-  # База данных PostgreSQL
-  postgres:
-    image: postgres:15
-    container_name: smart_house_db
+  db:
+    image: postgres:16
     environment:
       POSTGRES_DB: smart_house_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Zz3741205
+      POSTGRES_PASSWORD: Zz3741205  # Твой пароль
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - smart_house_network
+      - db-data:/var/lib/postgresql/data
+      # ИСПРАВЛЕНО: Путь теперь указывает на tables.sql внутри папки sql/demo
+      - ./back_end/demo/src/main/java/com.avelina_anton.bzhch.smart_house.demo/sql/tables.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Бэкенд Spring Boot приложение
   backend:
+    # ИСПРАВЛЕНИЕ:
+    # 1. context: Указывает, где лежит код (pom.xml, src)
+    # 2. dockerfile: Указывает, где лежит Dockerfile
     build:
-      context: ./back_end
-      dockerfile: Dockerfile
-    container_name: smart_house_backend
+      context: ./back_end/demo
+      dockerfile: ../Dockerfile # Путь к файлу Dockerfile относительно папки demo
     ports:
       - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smart_house_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/smart_house_db  # Переопределение для Docker
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: Zz3741205
-      JWT_SECRET: MySuperSecretKey123456789012345678901234567890
-      JWT_EXPIRATION_MS: "3600000"
-    depends_on:
-      - postgres
-    networks:
-      - smart_house_network
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
-networks:
-  smart_house_network:
-    driver: bridge
+  frontend:
+    build: ./frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
 
 volumes:
-  postgres_data:
+  db-data:
