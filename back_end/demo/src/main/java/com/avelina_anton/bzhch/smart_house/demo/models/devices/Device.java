@@ -1,9 +1,12 @@
 // Device.java
 package com.avelina_anton.bzhch.smart_house.demo.models.devices;
 
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -36,6 +39,16 @@ public class Device {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "smart_home_id")
+    private SmartHome smartHome;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public String getStatusDescription() {
         switch (type) {

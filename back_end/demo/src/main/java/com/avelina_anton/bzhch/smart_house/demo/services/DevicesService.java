@@ -1,6 +1,6 @@
-// DevicesService.java
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus;
@@ -28,13 +28,18 @@ public class DevicesService {
         return devicesRepository.findAll();
     }
 
+    // НОВОЕ: Метод для получения всех устройств по SmartHome
+    public List<Device> findBySmartHome(SmartHome smartHome) {
+        return devicesRepository.findBySmartHome(smartHome);
+    }
+
     public List<Device> findByUserId(Long userId) {
         return devicesRepository.findByUser_Id(userId);
     }
 
     public Device save(Device device) {
         if (device == null || device.getType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid device data");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Устройство не может быть сохранено без типа");
         }
         return devicesRepository.save(device);
     }
@@ -74,6 +79,12 @@ public class DevicesService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
 
         device.setMode(DeviceMode.AUTO);
+        return devicesRepository.save(device);
+    }
+
+    public Device setDeviceStatusAndPower(Device device, DeviceStatus status, int powerLevel) {
+        device.setStatus(status);
+        device.setPowerLevel(powerLevel);
         return devicesRepository.save(device);
     }
 

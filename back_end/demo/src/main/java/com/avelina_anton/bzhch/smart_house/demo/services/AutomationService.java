@@ -1,13 +1,12 @@
-
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceType;
-import com.avelina_anton.bzhch.smart_house.demo.repositories.DevicesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,107 +21,146 @@ public class AutomationService {
     private static final Logger logger = LoggerFactory.getLogger(AutomationService.class);
     private final SensorsService sensorsService;
     private final DevicesService devicesService;
+    private final SmartHomeService smartHomeService;
+    private final SimulationService simulationService;
 
-    public AutomationService(SensorsService sensorsService, DevicesService devicesService) {
+    // Зоны комфорта
+    private static final double TEMP_COMFORT_MIN = 20.0;
+    private static final double TEMP_COMFORT_MAX = 24.0;
+    private static final double HUMIDITY_COMFORT_MIN = 30.0;
+    private static final double HUMIDITY_COMFORT_MAX = 45.0;
+    private static final double CO2_COMFORT_MAX = 1000.0;
+
+    public AutomationService(SensorsService sensorsService, DevicesService devicesService,
+                             SmartHomeService smartHomeService, SimulationService simulationService) {
         this.sensorsService = sensorsService;
         this.devicesService = devicesService;
+        this.smartHomeService = smartHomeService;
+        this.simulationService = simulationService;
     }
 
     @Scheduled(fixedRate = 10000)
-    public void automateSmartHome() {
-        logger.info("Запуск автоматизации умного дома...");
-
-        List<Device> allDevices = devicesService.findAll();
-        Map<DeviceType, List<Device>> devicesByType = allDevices.stream()
-                .collect(Collectors.groupingBy(Device::getType));
-
-        processTemperature(devicesByType);
-        processHumidity(devicesByType);
-        processCO2(devicesByType);
+    public void runAutomationCycle() {
+        List<SmartHome> smartHomes = smartHomeService.findAll();
+        smartHomes.forEach(this::processSmartHome);
     }
 
-    private void processTemperature(Map<DeviceType, List<Device>> devicesByType) {
-        List<Sensor> temperatureSensors = sensorsService.getSensorsByType(SensorType.TEMPERATURE);
-        if (temperatureSensors.isEmpty()) return;
+    private void processSmartHome(SmartHome smartHome) {
+        List<Device> allDevices = devicesService.findByUserId(smartHome.getUser().getId());
 
-        double avgTemp = temperatureSensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
-        logger.info("Средняя температура: {}°C", avgTemp);
+        // Работаем только с устройствами в авторежиме
+        List<Device> autoDevices = allDevices.stream()
+                .filter(device -> device.getMode() == DeviceMode.AUTO)
+                .collect(Collectors.toList());
+
+        if (autoDevices.isEmpty()) return;
+
+        Map<DeviceType, List<Device>> devicesByType = autoDevices.stream()
+                .collect(Collectors.groupingBy(Device::getType));
+
+        List<Sensor> allSensors = sensorsService.getAllSensors();
+        Map<SensorType, List<Sensor>> sensorsByType = allSensors.stream()
+                .collect(Collectors.groupingBy(Sensor::getType));
+
+        processTemperature(smartHome, sensorsByType.getOrDefault(SensorType.TEMPERATURE, List.of()), devicesByType);
+        processHumidity(smartHome, sensorsByType.getOrDefault(SensorType.HUMIDITY, List.of()), devicesByType);
+        processCO2(smartHome, sensorsByType.getOrDefault(SensorType.CO2, List.of()), devicesByType);
+    }
+
+    private void processTemperature(SmartHome smartHome, List<Sensor> sensors, Map<DeviceType, List<Device>> devicesByType) {
+        if (sensors.isEmpty()) return;
+
+        double avgTemp = sensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
+        logger.info("Автоматизация {}: Температура {}°C", smartHome.getName(), String.format("%.2f", avgTemp));
 
         List<Device> heaters = devicesByType.getOrDefault(DeviceType.HEATER, List.of());
         List<Device> conditioners = devicesByType.getOrDefault(DeviceType.AIR_CONDITIONER, List.of());
 
-        if (avgTemp < 20.0) {
-            logger.info("Температура низкая, включаем обогреватели");
-            setDevicesStatus(heaters, DeviceStatus.ON);
-            setDevicesStatus(conditioners, DeviceStatus.OFF);
-        } else if (avgTemp > 24.0) {
-            logger.info("Температура высокая, включаем кондиционеры");
-            setDevicesStatus(conditioners, DeviceStatus.ON);
-            setDevicesStatus(heaters, DeviceStatus.OFF);
-        } else {
-            logger.info("Температура нормальная, выключаем климатику");
-            setDevicesStatus(heaters, DeviceStatus.OFF);
-            setDevicesStatus(conditioners, DeviceStatus.OFF);
+        // Выключаем все авто-устройства, если в зоне комфорта
+        if (avgTemp >= TEMP_COMFORT_MIN && avgTemp <= TEMP_COMFORT_MAX) {
+            setDevicesStatus(heaters, DeviceStatus.OFF, 0);
+            setDevicesStatus(conditioners, DeviceStatus.OFF, 0);
+            return;
+        }
+
+        // Если слишком холодно - включаем обогреватели
+        if (avgTemp < TEMP_COMFORT_MIN) {
+            setDevicesStatus(heaters, DeviceStatus.ON, calculatePowerLevel(avgTemp, TEMP_COMFORT_MIN, 100));
+            setDevicesStatus(conditioners, DeviceStatus.OFF, 0);
+        }
+        // Если слишком жарко - включаем кондиционеры
+        else if (avgTemp > TEMP_COMFORT_MAX) {
+            setDevicesStatus(heaters, DeviceStatus.OFF, 0);
+            setDevicesStatus(conditioners, DeviceStatus.ON, calculatePowerLevel(avgTemp, TEMP_COMFORT_MAX, 100));
         }
     }
 
-    private void processHumidity(Map<DeviceType, List<Device>> devicesByType) {
-        List<Sensor> humiditySensors = sensorsService.getSensorsByType(SensorType.HUMIDITY);
-        if (humiditySensors.isEmpty()) return;
+    private void processHumidity(SmartHome smartHome, List<Sensor> sensors, Map<DeviceType, List<Device>> devicesByType) {
+        if (sensors.isEmpty()) return;
 
-        double avgHumidity = humiditySensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
-        logger.info("Средняя влажность: {}%", avgHumidity);
+        double avgHumidity = sensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
+        logger.info("Автоматизация {}: Влажность {}%", smartHome.getName(), String.format("%.2f", avgHumidity));
 
         List<Device> humidifiers = devicesByType.getOrDefault(DeviceType.HUMIDIFIER, List.of());
         List<Device> dehumidifiers = devicesByType.getOrDefault(DeviceType.DEHUMIDIFIER, List.of());
 
-        if (avgHumidity < 30.0) {
-            logger.info("Влажность низкая, включаем увлажнители");
-            setDevicesStatus(humidifiers, DeviceStatus.ON);
-            setDevicesStatus(dehumidifiers, DeviceStatus.OFF);
-        } else if (avgHumidity > 45.0) {
-            logger.info("Влажность высокая, включаем осушители");
-            setDevicesStatus(dehumidifiers, DeviceStatus.ON);
-            setDevicesStatus(humidifiers, DeviceStatus.OFF);
-        } else {
-            logger.info("Влажность нормальная, выключаем оборудование");
-            setDevicesStatus(humidifiers, DeviceStatus.OFF);
-            setDevicesStatus(dehumidifiers, DeviceStatus.OFF);
+        // Выключаем все, если в зоне комфорта
+        if (avgHumidity >= HUMIDITY_COMFORT_MIN && avgHumidity <= HUMIDITY_COMFORT_MAX) {
+            setDevicesStatus(humidifiers, DeviceStatus.OFF, 0);
+            setDevicesStatus(dehumidifiers, DeviceStatus.OFF, 0);
+            return;
+        }
+
+        // Если слишком сухо - включаем увлажнители
+        if (avgHumidity < HUMIDITY_COMFORT_MIN) {
+            setDevicesStatus(humidifiers, DeviceStatus.ON, calculatePowerLevel(avgHumidity, HUMIDITY_COMFORT_MIN, 100));
+            setDevicesStatus(dehumidifiers, DeviceStatus.OFF, 0);
+        }
+        // Если слишком влажно - включаем осушители
+        else if (avgHumidity > HUMIDITY_COMFORT_MAX) {
+            setDevicesStatus(humidifiers, DeviceStatus.OFF, 0);
+            setDevicesStatus(dehumidifiers, DeviceStatus.ON, calculatePowerLevel(avgHumidity, HUMIDITY_COMFORT_MAX, 100));
         }
     }
 
-    private void processCO2(Map<DeviceType, List<Device>> devicesByType) {
-        List<Sensor> co2Sensors = sensorsService.getSensorsByType(SensorType.CO2);
-        if (co2Sensors.isEmpty()) return;
+    private void processCO2(SmartHome smartHome, List<Sensor> sensors, Map<DeviceType, List<Device>> devicesByType) {
+        if (sensors.isEmpty()) return;
 
-        double avgCo2 = co2Sensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
-        logger.info("Средний уровень CO2: {} ppm", avgCo2);
+        double avgCo2 = sensors.stream().mapToDouble(Sensor::getValue).average().orElse(0.0);
+        logger.info("Автоматизация {}: CO2 {} ppm", smartHome.getName(), String.format("%.2f", avgCo2));
 
         List<Device> ventilators = devicesByType.getOrDefault(DeviceType.VENTILATOR, List.of());
 
-        if (avgCo2 > 1000.0) {
-            logger.info("CO2 высокий, включаем вентиляторы");
-            setDevicesStatus(ventilators, DeviceStatus.ON);
-        } else if (avgCo2 > 800.0) {
-            logger.info("CO2 повышенный, регулируем вентиляцию");
-            ventilators.forEach(device -> {
-                if (device.getMode() == DeviceMode.AUTO) {
-                    device.setPowerLevel(50);
-                    device.setStatus(DeviceStatus.ON);
-                    devicesService.save(device);
-                }
-            });
-        } else {
-            logger.info("CO2 нормальный, выключаем вентиляторы");
-            setDevicesStatus(ventilators, DeviceStatus.OFF);
+        // Выключаем, если в зоне комфорта
+        if (avgCo2 <= CO2_COMFORT_MAX) {
+            setDevicesStatus(ventilators, DeviceStatus.OFF, 0);
+            return;
+        }
+
+        // Если CO2 высокий - включаем вентиляцию
+        if (avgCo2 > CO2_COMFORT_MAX) {
+            setDevicesStatus(ventilators, DeviceStatus.ON, calculatePowerLevel(avgCo2, CO2_COMFORT_MAX, 100));
         }
     }
 
-    private void setDevicesStatus(List<Device> devices, DeviceStatus status) {
+    private int calculatePowerLevel(double currentValue, double targetValue, int maxPower) {
+        double difference = Math.abs(currentValue - targetValue);
+        // Чем больше разница, тем выше мощность
+        double powerRatio = Math.min(difference / 5.0, 1.0); // Нормализуем разницу
+        return (int) (maxPower * powerRatio);
+    }
+
+    private void setDevicesStatus(List<Device> devices, DeviceStatus status, int powerLevel) {
         devices.forEach(device -> {
-            if (device.getMode() == DeviceMode.AUTO) {
-                device.setStatus(status);
-                devicesService.save(device);
+            try {
+                // В авторежиме устройства работают только пока не достигнут зону комфорта
+                devicesService.setDeviceStatusAndPower(device, status, powerLevel);
+                logger.info("Авторежим: {} {} ({}%)",
+                        device.getName(),
+                        status == DeviceStatus.ON ? "включен" : "выключен",
+                        powerLevel);
+            } catch (Exception e) {
+                logger.error("Ошибка автоуправления {}: {}", device.getName(), e.getMessage());
             }
         });
     }

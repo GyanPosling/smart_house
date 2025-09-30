@@ -1,0 +1,66 @@
+package com.avelina_anton.bzhch.smart_house.demo.controllers;
+
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
+import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/smarthome")
+public class SmartHomeController {
+
+    private final SmartHomeService smartHomeService;
+
+    public SmartHomeController(SmartHomeService smartHomeService) {
+        this.smartHomeService = smartHomeService;
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<SmartHome> getSmartHomeByUserId(@PathVariable Long userId) {
+        try {
+            SmartHome smartHome = smartHomeService.findByUserId(userId);
+            if (smartHome != null) {
+                return ResponseEntity.ok(smartHome);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // остальные методы остаются без изменений
+    @PostMapping
+    public ResponseEntity<SmartHome> createSmartHome(@RequestBody SmartHome smartHome) {
+        SmartHome createdSmartHome = smartHomeService.save(smartHome);
+        return new ResponseEntity<>(createdSmartHome, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<SmartHome>> getAllSmartHomes() {
+        List<SmartHome> smartHomes = smartHomeService.findAll();
+        return ResponseEntity.ok(smartHomes);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SmartHome> getSmartHomeById(@PathVariable Long id) {
+        return smartHomeService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SmartHome> updateSmartHome(@PathVariable Long id, @RequestBody SmartHome smartHomeDetails) {
+        SmartHome updatedSmartHome = smartHomeService.update(id, smartHomeDetails);
+        return ResponseEntity.ok(updatedSmartHome);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSmartHome(@PathVariable Long id) {
+        smartHomeService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

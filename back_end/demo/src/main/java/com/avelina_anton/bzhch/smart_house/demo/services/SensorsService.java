@@ -1,8 +1,8 @@
-// SensorsService.java
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.SensorsRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,15 @@ public class SensorsService {
     public SensorsService(SensorsRepository sensorsRepository) {
         this.sensorsRepository = sensorsRepository;
     }
+
+    public List<Sensor> getSensorsBySmartHome(SmartHome smartHome) {
+        return sensorsRepository.findBySmartHome(smartHome);
+    }
+
+    public List<Sensor> getSensorsBySmartHomeAndType(SmartHome smartHome, SensorType type) {
+        return sensorsRepository.findBySmartHomeAndType(smartHome, type);
+    }
+
 
     public List<Sensor> getSensorsByType(SensorType type) {
         return sensorsRepository.findByType(type);

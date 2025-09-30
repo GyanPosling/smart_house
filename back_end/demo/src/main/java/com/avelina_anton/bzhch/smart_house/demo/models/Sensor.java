@@ -4,6 +4,8 @@ package com.avelina_anton.bzhch.smart_house.demo.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "sensors")
@@ -17,4 +19,14 @@ public class Sensor {
 
     private double value;
     private String location;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "smart_home_id")
+    private SmartHome smartHome;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

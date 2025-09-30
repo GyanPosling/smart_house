@@ -1,6 +1,7 @@
 // DeviceDTO.java
 package com.avelina_anton.bzhch.smart_house.demo.dto;
 
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceType;
@@ -40,5 +41,8 @@ public class DeviceDTO {
 
     private Integer currentHumidity;
 
-    private Long userId; // Ссылка на пользователя, если нужно
+    private Long userId;
+
+    private SmartHome smartHome;
+
 }

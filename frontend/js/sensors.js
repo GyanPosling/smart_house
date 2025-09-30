@@ -1,7 +1,7 @@
-// Загрузка данных с датчиков
 async function loadSensors() {
+    if (!smartHomeId) return;
     try {
-        const sensors = await apiCall('/smart_house/sensors');
+        const sensors = await apiCall(`/smarthome/${smartHomeId}/sensors`);
         displaySensors(sensors);
     } catch (error) {
         console.error('Ошибка загрузки датчиков:', error);
@@ -10,7 +10,6 @@ async function loadSensors() {
     }
 }
 
-// Отображение данных с датчиков
 function displaySensors(sensors) {
     const sensorsData = document.getElementById('sensorsData');
 
@@ -35,6 +34,16 @@ function displaySensors(sensors) {
     }).join('');
 }
 
+function getSensorTypeName(type) {
+    const names = {
+        'TEMPERATURE': '🌡️ Температура',
+        'HUMIDITY': '💧 Влажность',
+        'CO2': '💨 CO₂',
+        'NOISE': '📢 Шум'
+    };
+    return names[type] || type;
+}
+
 function getStatusMessage(type, value, status) {
     const messages = {
         'TEMPERATURE': {
@@ -43,7 +52,7 @@ function getStatusMessage(type, value, status) {
             'danger': '❌ Температура вне зоны комфорта'
         },
         'HUMIDITY': {
-            'good': '✅ Оптимальная влажность',
+            'good': '✅ Комфортная влажность',
             'warning': '⚠️ Влажность близка к границам комфорта',
             'danger': '❌ Влажность вне зоны комфорта'
         },
@@ -62,7 +71,6 @@ function getStatusMessage(type, value, status) {
     return messages[type]?.[status] || '📊 Данные получены';
 }
 
-// Профиль пользователя
 function showProfile() {
     const profileInfo = document.getElementById('profileInfo');
 
@@ -70,6 +78,7 @@ function showProfile() {
         profileInfo.innerHTML = '<p>❌ Информация о пользователе недоступна</p>';
     } else {
         profileInfo.innerHTML = `
+            <p><strong>🏠 Имя дома:</strong> ${currentUser.smartHomeName || 'Неизвестно'}</p>
             <p><strong>👤 Имя пользователя:</strong> ${currentUser.name}</p>
             <p><strong>📱 Количество устройств:</strong> ${currentUser.devicesCount || 0}</p>
             <p><strong>🕐 Последний вход:</strong> ${currentUser.lastLogin || 'Неизвестно'}</p>
@@ -77,7 +86,6 @@ function showProfile() {
             <p><strong>🔧 Режим работы:</strong> Автоматическое управление микроклиматом</p>
         `;
     }
-
     document.getElementById('profileModal').classList.remove('hidden');
 }
 

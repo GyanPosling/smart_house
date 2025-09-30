@@ -7,8 +7,120 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<!-- Страница регистрации -->
-<div id="registerPage" class="auth-container">
+<div id="landingPage" class="landing-container">
+    <nav class="landing-nav">
+        <div class="nav-brand">
+            <h1>🏠 УмныйДом</h1>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-outline" onclick="showLogin()">Войти</button>
+            <button class="btn btn-primary" onclick="showRegister()">Регистрация</button>
+        </div>
+    </nav>
+
+    <main class="landing-main">
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>Умная система контроля микроклимата</h1>
+                <p class="hero-description">
+                    Автоматическое поддержание идеального климата в вашем доме.
+                    Умные датчики следят за температурой, влажностью, качеством воздуха
+                    и автоматически регулируют работу оборудования.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn btn-large btn-primary" onclick="showLogin()">
+                        🚀 Начать использовать
+                    </button>
+                    <button class="btn btn-large btn-outline" onclick="scrollToFeatures()">
+                        📋 Узнать больше
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="smart-home-visual">
+                    <div class="house">
+                        <div class="roof"></div>
+                        <div class="walls">
+                            <div class="window"></div>
+                            <div class="door"></div>
+                        </div>
+                    </div>
+                    <div class="sensors">
+                        <div class="sensor temp">🌡️ 22°C</div>
+                        <div class="sensor humidity">💧 45%</div>
+                        <div class="sensor co2">🌫️ 800ppm</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <h2>Как работает умный дом?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Непрерывный мониторинг</h3>
+                    <p>Датчики постоянно отслеживают температуру, влажность, уровень CO₂ и шума</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Автоматическое управление</h3>
+                    <p>Система автоматически включает обогреватели, кондиционеры, увлажнители</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍💻</div>
+                    <h3>Ручное управление</h3>
+                    <p>Всегда можно взять контроль на себя и управлять приборами вручную</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Удобный интерфейс</h3>
+                    <p>Простое и интуитивное управление через веб-интерфейс с любого устройства</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-section">
+            <h2>Технологии</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <h4>🌡️ Датчики</h4>
+                    <ul>
+                        <li>Температура: 20-24°C</li>
+                        <li>Влажность: 30-45%</li>
+                        <li>CO₂: до 1000 ppm</li>
+                        <li>Уровень шума</li>
+                    </ul>
+                </div>
+                <div class="tech-item">
+                    <h4>⚡ Приборы</h4>
+                    <ul>
+                        <li>Обогреватели</li>
+                        <li>Кондиционеры</li>
+                        <li>Увлажнители</li>
+                        <li>Осушители</li>
+                        <li>Вентиляторы</li>
+                    </ul>
+                </div>
+                <div class="tech-item">
+                    <h4>🔧 Технологии</h4>
+                    <ul>
+                        <li>Java Spring Boot</li>
+                        <li>PostgreSQL</li>
+                        <li>Docker</li>
+                        <li>REST API</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <p>© 2024 Умная система контроля микроклимата. Все права защищены.</p>
+    </footer>
+</div>
+
+<div id="registerPage" class="auth-container hidden">
     <div class="auth-form">
         <h2>Регистрация</h2>
         <form id="registerForm">
@@ -24,7 +136,7 @@
                 <label>Пароль:</label>
                 <input type="password" id="regPassword" required>
             </div>
-            <button type="submit" class="btn">Зарегистрироваться</button>
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
         </form>
         <div class="auth-switch">
             Уже есть аккаунт? <a onclick="showLogin()">Войти</a>
@@ -32,7 +144,6 @@
     </div>
 </div>
 
-<!-- Страница входа -->
 <div id="loginPage" class="auth-container hidden">
     <div class="auth-form">
         <h2>Вход в систему</h2>
@@ -45,7 +156,7 @@
                 <label>Пароль:</label>
                 <input type="password" id="loginPassword" required>
             </div>
-            <button type="submit" class="btn">Войти</button>
+            <button type="submit" class="btn btn-primary">Войти</button>
         </form>
         <div class="auth-switch">
             Нет аккаунта? <a onclick="showRegister()">Зарегистрироваться</a>
@@ -53,7 +164,6 @@
     </div>
 </div>
 
-<!-- Главная страница -->
 <div id="mainPage" class="hidden">
     <div class="container">
         <header class="header">
@@ -61,8 +171,8 @@
                 <h1>🏠 Умный дом - Система контроля микроклимата</h1>
                 <div class="user-info">
                     <span id="userWelcome">Добро пожаловать!</span>
-                    <button class="btn btn-small" onclick="showProfile()">👤 Профиль</button>
-                    <button class="btn btn-small" onclick="logout()">🚪 Выйти</button>
+                    <button class="btn btn-small btn-primary" onclick="showProfile()">👤 Профиль</button>
+                    <button class="btn btn-small btn-secondary" onclick="logout()">🚪 Выйти</button>
                 </div>
             </nav>
         </header>
@@ -71,17 +181,15 @@
             <div class="devices-section">
                 <div class="section-header">
                     <h2>📱 Мои устройства</h2>
-                    <button class="btn" onclick="showAddDeviceModal()">➕ Добавить устройство</button>
+                    <button class="btn btn-primary" onclick="showAddDeviceModal()">➕ Добавить устройство</button>
                 </div>
                 <div id="devicesList" class="devices-grid">
-                    <!-- Список устройств будет здесь -->
                 </div>
             </div>
 
             <div class="sensors-panel">
                 <h3>📊 Датчики</h3>
                 <div id="sensorsData">
-                    <!-- Данные с датчиков будут здесь -->
                 </div>
                 <div class="comfort-zones">
                     <h4>⚡ Зоны комфорта</h4>
@@ -94,7 +202,6 @@
     </div>
 </div>
 
-<!-- Модальные окна -->
 <div id="addDeviceModal" class="modal hidden">
     <div class="modal-content">
         <h3>➕ Добавить устройство</h3>
@@ -126,9 +233,17 @@
     <div class="modal-content">
         <h3>👤 Профиль пользователя</h3>
         <div id="profileInfo" class="profile-info">
-            <!-- Информация о профиле будет здесь -->
         </div>
         <button class="btn btn-secondary" onclick="hideProfileModal()">Закрыть</button>
+    </div>
+</div>
+
+<div id="deviceDetailModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>📱 Информация об устройстве</h3>
+        <div id="deviceDetailInfo">
+        </div>
+        <button class="btn btn-secondary" onclick="hideDeviceDetailModal()">Закрыть</button>
     </div>
 </div>
 

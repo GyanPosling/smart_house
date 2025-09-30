@@ -1,7 +1,7 @@
-// Загрузка устройств
 async function loadDevices() {
+    if (!smartHomeId) return;
     try {
-        const devices = await apiCall('/smart_house/devices');
+        const devices = await apiCall(`/smarthome/${smartHomeId}/devices`);
         displayDevices(devices);
         if (currentUser) {
             currentUser.devicesCount = devices.length;
@@ -13,7 +13,6 @@ async function loadDevices() {
     }
 }
 
-// Отображение устройств
 function displayDevices(devices) {
     const devicesList = document.getElementById('devicesList');
 
@@ -29,64 +28,131 @@ function displayDevices(devices) {
     }
 
     devicesList.innerHTML = devices.map(device => `
-        <div class="device-card ${device.status === 'ON' ? 'on' : 'off'} ${device.mode === 'AUTO' ? 'auto' : ''}">
+        <div class="device-card ${device.status === 'ON' ? 'on' : 'off'} ${device.mode === 'AUTO' ? 'auto' : ''}" 
+             onclick="showDeviceDetail(${device.id})">
             <div class="device-header">
                 <div class="device-title">${device.name}</div>
-                <span class="device-status ${device.status === 'ON' ? 'status-on' : 'status-off'} ${device.mode === 'AUTO' ? 'status-auto' : ''}">
-                    ${device.mode === 'AUTO' ? 'АВТО' : (device.status === 'ON' ? 'ВКЛ' : 'ВЫКЛ')}
+                <span class="device-status ${device.status === 'ON' ? 'status-on' : 'status-off'}">
+                    ${device.status === 'ON' ? 'ВКЛ' : 'ВЫКЛ'}
                 </span>
             </div>
-            <div class="device-info">
-                <p><strong>Тип:</strong> ${getDeviceTypeName(device.type)}</p>
-                <p><strong>Режим:</strong> ${device.mode === 'AUTO' ? '🤖 Автоматический' : '👋 Ручной'}</p>
-                <p><strong>ID:</strong> ${device.id}</p>
-            </div>
-            <div class="device-controls">
-                <button class="btn btn-success btn-small" onclick="toggleDevice(${device.id}, 'ON')" ${device.status === 'ON' ? 'disabled' : ''}>
-                    🔌 Включить
-                </button>
-                <button class="btn btn-danger btn-small" onclick="toggleDevice(${device.id}, 'OFF')" ${device.status === 'OFF' ? 'disabled' : ''}>
-                    🔋 Выключить
-                </button>
-                <button class="btn btn-warning btn-small" onclick="setAutoMode(${device.id})" ${device.mode === 'AUTO' ? 'disabled' : ''}>
-                    🤖 Авторежим
-                </button>
+            <div class="device-body">
+                <div class="device-icon">${getDeviceIcon(device.type)}</div>
+                <div class="device-info">
+                    <small>📍 ${device.location}</small>
+                    <small class="mode-tag">${device.mode === 'AUTO' ? 'Авто' : 'Ручной'}</small>
+                </div>
             </div>
         </div>
     `).join('');
 }
 
-// Управление устройствами
-async function toggleDevice(deviceId, status) {
+async function showDeviceDetail(deviceId) {
     try {
-        const endpoint = status === 'ON' ? 'on' : 'off';
-        await apiCall(`/smart_house/devices/${deviceId}/${endpoint}`, {
-            method: 'PATCH'
-        });
+        const device = await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}`);
+        const detailDiv = document.getElementById('deviceDetailInfo');
 
-        await loadDevices(); // Обновляем список устройств
-        showNotification(`✅ Устройство ${status === 'ON' ? 'включено' : 'выключено'}`);
+        detailDiv.innerHTML = `
+            <p><strong>Название:</strong> ${device.name}</p>
+            <p><strong>Тип:</strong> ${getDeviceTypeName(device.type)}</p>
+            <p><strong>Статус:</strong> <span class="device-status ${device.status === 'ON' ? 'status-on' : 'status-off'}">${device.status}</span></p>
+            <p><strong>Режим:</strong> ${device.mode === 'AUTO' ? 'Автоматический' : 'Ручной'}</p>
+            <p><strong>Уровень мощности:</strong> ${device.powerLevel}%</p>
+            <p><strong>Расположение:</strong> ${device.location}</p>
+            
+            ${device.supportsTemperatureControl ?
+            `<p><strong>Текущая темп.:</strong> ${device.currentTemperature || '?'}°C</p>
+                 <p><strong>Целевая темп.:</strong> ${device.targetTemperature || '?'}°C</p>`
+            : ''}
+            
+            ${device.supportsHumidityControl ?
+            `<p><strong>Текущая влажность:</strong> ${device.currentHumidity || '?'}%</p>
+                 <p><strong>Целевая влажность:</strong> ${device.targetHumidity || '?'}%</p>`
+            : ''}
+
+            <div class="detail-actions">
+                ${device.status === 'OFF' ?
+            `<button class="btn btn-success" onclick="toggleDeviceStatus(${device.id}, 'ON')">ВКЛЮЧИТЬ</button>` :
+            `<button class="btn btn-danger" onclick="toggleDeviceStatus(${device.id}, 'OFF')">ВЫКЛЮЧИТЬ</button>`
+        }
+                <button class="btn btn-info" onclick="setDeviceMode(${device.id}, '${device.mode === 'AUTO' ? 'MANUAL' : 'AUTO'}')">
+                    Переключить на ${device.mode === 'AUTO' ? 'Ручной' : 'Авто'}
+                </button>
+                <button class="btn btn-secondary" onclick="deleteDevice(${device.id})">Удалить</button>
+            </div>
+        `;
+
+        document.getElementById('deviceDetailModal').classList.remove('hidden');
+
     } catch (error) {
-        console.error('Ошибка управления устройством:', error);
-        showNotification('❌ Ошибка управления устройством', 'error');
+        console.error('Ошибка загрузки деталей устройства:', error);
+        showNotification('❌ Ошибка загрузки деталей устройства', 'error');
     }
 }
 
-async function setAutoMode(deviceId) {
+async function toggleDeviceStatus(deviceId, newStatus) {
     try {
-        await apiCall(`/smart_house/devices/${deviceId}/auto`, {
-            method: 'PATCH'
+        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}/${newStatus.toLowerCase()}`, {
+            method: 'PUT'
         });
+        showNotification(`✅ Устройство ${newStatus === 'ON' ? 'включено' : 'выключено'}`);
+        hideDeviceDetailModal();
+        await updateData();
+    } catch (error) {
+        showNotification('❌ Ошибка изменения статуса', 'error');
+    }
+}
 
+async function setDeviceMode(deviceId, newMode) {
+    try {
+        const urlPart = newMode === 'AUTO' ? 'auto' : 'manual';
+        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}/${urlPart}`, {
+            method: 'PUT'
+        });
+        showNotification(`✅ Режим установлен на ${newMode === 'AUTO' ? 'Автоматический' : 'Ручной'}`);
+        hideDeviceDetailModal();
+        await updateData();
+    } catch (error) {
+        showNotification('❌ Ошибка изменения режима', 'error');
+    }
+}
+
+async function deleteDevice(deviceId) {
+    if (!confirm('Вы уверены, что хотите удалить это устройство?')) return;
+    try {
+        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}`, {
+            method: 'DELETE'
+        });
+        showNotification('✅ Устройство удалено');
+        hideDeviceDetailModal();
         await loadDevices();
-        showNotification('✅ Авторежим включен');
     } catch (error) {
-        console.error('Ошибка установки авторежима:', error);
-        showNotification('❌ Ошибка установки авторежима', 'error');
+        showNotification('❌ Ошибка удаления устройства', 'error');
     }
 }
 
-// Добавление устройства
+function getDeviceIcon(type) {
+    switch (type) {
+        case 'HEATER': return '🔥';
+        case 'AIR_CONDITIONER': return '❄️';
+        case 'HUMIDIFIER': return '💧';
+        case 'DEHUMIDIFIER': return '🌬️';
+        case 'VENTILATOR': return '💨';
+        default: return '🔌';
+    }
+}
+
+function getDeviceTypeName(type) {
+    switch (type) {
+        case 'HEATER': return 'Обогреватель';
+        case 'AIR_CONDITIONER': return 'Кондиционер';
+        case 'HUMIDIFIER': return 'Увлажнитель';
+        case 'DEHUMIDIFIER': return 'Осушитель';
+        case 'VENTILATOR': return 'Вентилятор';
+        default: return 'Другое устройство';
+    }
+}
+
 document.getElementById('addDeviceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -98,10 +164,15 @@ document.getElementById('addDeviceForm').addEventListener('submit', async (e) =>
 
         const deviceData = {
             name: document.getElementById('deviceName').value,
-            type: document.getElementById('deviceType').value
+            location: "Гостиная",
+            type: document.getElementById('deviceType').value,
+            status: 'OFF',
+            mode: 'AUTO',
+            powerLevel: 0,
+            isConnected: true
         };
 
-        await apiCall('/smart_house/devices', {
+        await apiCall(`/smarthome/${smartHomeId}/devices`, {
             method: 'POST',
             body: JSON.stringify(deviceData)
         });
@@ -119,7 +190,6 @@ document.getElementById('addDeviceForm').addEventListener('submit', async (e) =>
     }
 });
 
-// Модальные окна устройств
 function showAddDeviceModal() {
     document.getElementById('addDeviceModal').classList.remove('hidden');
 }
@@ -129,7 +199,10 @@ function hideAddDeviceModal() {
     document.getElementById('addDeviceForm').reset();
 }
 
-// Уведомления
+function hideDeviceDetailModal() {
+    document.getElementById('deviceDetailModal').classList.add('hidden');
+}
+
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -143,12 +216,13 @@ function showNotification(message, type = 'success') {
         padding: 15px 20px;
         border-radius: 8px;
         z-index: 1001;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: opacity 0.3s ease-in-out;
     `;
-
     document.body.appendChild(notification);
 
     setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
 }

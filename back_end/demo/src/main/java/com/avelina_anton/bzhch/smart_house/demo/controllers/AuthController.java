@@ -1,4 +1,3 @@
-// AuthController.java
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
@@ -14,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -38,16 +40,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody User user) {
-        if (usersRepository.existsByName(user.getName())) {
-            return ResponseEntity.badRequest().body("Username already taken");
-        }
-        if (usersRepository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already in use");
-        }
+        try {
+            if (usersRepository.existsByName(user.getName())) {
+                return ResponseEntity.badRequest().body("Username already taken");
+            }
+            if (usersRepository.findByEmail(user.getEmail()).isPresent()) {
+                return ResponseEntity.badRequest().body("Email already in use");
+            }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        usersRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            User savedUser = usersRepository.save(user);
+
+            return ResponseEntity.ok("User registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
+        }
     }
 
     @PostMapping("/login")
@@ -60,9 +67,19 @@ public class AuthController {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getName());
             String token = jwtUtils.generateJwtToken(userDetails.getUsername());
 
-            return ResponseEntity.ok(token);
+            User foundUser = usersRepository.findByName(user.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("jwt", token);
+            response.put("userId", foundUser.getId());
+
+            return ResponseEntity.ok(response);
+
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed: " + e.getMessage());
         }
     }
 }

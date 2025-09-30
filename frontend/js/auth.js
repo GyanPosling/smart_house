@@ -1,4 +1,3 @@
-// Регистрация
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -38,7 +37,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Вход
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -62,22 +60,41 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            token = await response.text();
+            const data = await response.json();
+            token = data.jwt;
             localStorage.setItem('token', token);
             localStorage.setItem('username', loginData.name);
-            await showMainPage();
+
+            await fetchSmartHomeId(data.userId);
+
+            showMainPage();
+            document.getElementById('loginForm').reset();
         } else {
-            alert('❌ Ошибка входа: Неверные учетные данные');
+            const error = await response.text();
+            alert('❌ Ошибка входа: ' + error);
         }
     } catch (error) {
-        alert('❌ Ошибка сети: ' + error.message);
+        alert('❌ Ошибка сети или сервера: ' + error.message);
     } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
 });
 
-// Показать главную страницу
+async function fetchSmartHomeId(userId) {
+    try {
+        const smartHome = await apiCall(`/smarthome/user/${userId}`);
+        smartHomeId = smartHome.id;
+        localStorage.setItem('smartHomeId', smartHomeId);
+        currentUser.smartHomeName = smartHome.name;
+    } catch (error) {
+        console.error('Не удалось загрузить ID умного дома для пользователя:', error);
+        alert('❌ Ошибка: Умный дом не найден или не создан. Обратитесь к администратору.');
+        logout();
+        throw error;
+    }
+}
+
 async function showMainPage() {
     hideAllPages();
     document.getElementById('mainPage').classList.remove('hidden');
@@ -87,7 +104,6 @@ async function showMainPage() {
         await loadDevices();
         await loadSensors();
 
-        // Запускаем обновление данных
         if (updateInterval) clearInterval(updateInterval);
         updateInterval = setInterval(updateData, 5000);
 
@@ -97,7 +113,6 @@ async function showMainPage() {
     }
 }
 
-// Обновление данных
 async function updateData() {
     try {
         await loadSensors();
@@ -107,29 +122,24 @@ async function updateData() {
     }
 }
 
-// Загрузка данных пользователя
 async function loadUserData() {
     const username = localStorage.getItem('username') || 'Пользователь';
     currentUser = {
         name: username,
         devicesCount: 0,
+        smartHomeName: currentUser ? currentUser.smartHomeName : 'Загрузка...',
         lastLogin: new Date().toLocaleDateString('ru-RU')
     };
     document.getElementById('userWelcome').textContent = `Добро пожаловать, ${currentUser.name}!`;
 }
 
-// Выход
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('smartHomeId');
     token = null;
+    smartHomeId = null;
     currentUser = null;
-
-    if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-    }
-
-    showRegister();
-    alert('👋 Вы вышли из системы');
+    if (updateInterval) clearInterval(updateInterval);
+    showLandingPage();
 }

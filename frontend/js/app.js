@@ -1,29 +1,26 @@
 const API_BASE = 'http://localhost:8080';
 let currentUser = null;
 let token = localStorage.getItem('token');
+let smartHomeId = localStorage.getItem('smartHomeId');
 let updateInterval = null;
 
-// Инициализация приложения
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 });
 
 function initializeApp() {
-    // Проверка аутентификации при загрузке
-    if (token) {
+    if (token && smartHomeId) {
         showMainPage();
     } else {
-        showRegister();
+        showLandingPage();
     }
 
-    // Обработка закрытия модальных окон
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
             e.target.classList.add('hidden');
         }
     });
 
-    // Обработка клавиши Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             hideAllModals();
@@ -31,7 +28,11 @@ function initializeApp() {
     });
 }
 
-// Управление отображением страниц
+function showLandingPage() {
+    hideAllPages();
+    document.getElementById('landingPage').classList.remove('hidden');
+}
+
 function showRegister() {
     hideAllPages();
     document.getElementById('registerPage').classList.remove('hidden');
@@ -43,7 +44,7 @@ function showLogin() {
 }
 
 function hideAllPages() {
-    const pages = ['registerPage', 'loginPage', 'mainPage'];
+    const pages = ['landingPage', 'registerPage', 'loginPage', 'mainPage'];
     pages.forEach(page => {
         const element = document.getElementById(page);
         if (element) element.classList.add('hidden');
@@ -51,30 +52,11 @@ function hideAllPages() {
 }
 
 function hideAllModals() {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => modal.classList.add('hidden'));
-}
-
-// Вспомогательные функции
-function getDeviceTypeName(type) {
-    const types = {
-        'HEATER': '🔥 Обогреватель',
-        'AIR_CONDITIONER': '❄️ Кондиционер',
-        'HUMIDIFIER': '💧 Увлажнитель',
-        'DEHUMIDIFIER': '🌬️ Осушитель',
-        'VENTILATOR': '💨 Вентилятор'
-    };
-    return types[type] || type;
-}
-
-function getSensorTypeName(type) {
-    const types = {
-        'TEMPERATURE': '🌡️ Температура',
-        'HUMIDITY': '💧 Влажность',
-        'CO2': '🌫️ Уровень CO₂',
-        'NOISE': '🔊 Уровень шума'
-    };
-    return types[type] || type;
+    const modals = ['addDeviceModal', 'profileModal', 'deviceDetailModal'];
+    modals.forEach(modalId => {
+        const element = document.getElementById(modalId);
+        if (element) element.classList.add('hidden');
+    });
 }
 
 function getSensorUnit(type) {
@@ -106,7 +88,6 @@ function getSensorStatus(sensor) {
     return 'good';
 }
 
-// API вызовы с обработкой ошибок
 async function apiCall(url, options = {}) {
     try {
         const defaultOptions = {
@@ -121,16 +102,21 @@ async function apiCall(url, options = {}) {
 
         if (response.status === 401) {
             logout();
-            throw new Error('Требуется авторизация');
+            throw new Error('Unauthorized');
         }
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(errorText || response.statusText);
+        }
+
+        if (response.status === 204) {
+            return null;
         }
 
         return await response.json();
     } catch (error) {
-        console.error('API call failed:', error);
+        console.error('API Call Error:', error);
         throw error;
     }
 }

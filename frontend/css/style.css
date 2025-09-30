@@ -17,7 +17,97 @@ body {
     padding: 20px;
 }
 
-/* Страницы аутентификации */
+.landing-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.landing-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.nav-brand h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+}
+
+.btn-outline:hover {
+    background: white;
+    color: #667eea;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 18px;
+}
+
 .auth-container {
     display: flex;
     justify-content: center;
@@ -67,56 +157,6 @@ body {
     border-color: #667eea;
 }
 
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-align: center;
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5a6fd8;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-small {
-    padding: 8px 16px;
-    font-size: 14px;
-}
-
-.btn-success {
-    background: #28a745;
-    color: white;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-warning {
-    background: #ffc107;
-    color: #212529;
-}
-
 .auth-switch {
     text-align: center;
     margin-top: 25px;
@@ -134,7 +174,224 @@ body {
     text-decoration: underline;
 }
 
-/* Основная страница */
+.landing-main {
+    padding: 0 50px;
+}
+
+.hero-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+    min-height: 80vh;
+    padding: 50px 0;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero-description {
+    font-size: 20px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.smart-home-visual {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.house {
+    position: relative;
+    width: 200px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.roof {
+    width: 0;
+    height: 0;
+    border-left: 100px solid transparent;
+    border-right: 100px solid transparent;
+    border-bottom: 80px solid #e74c3c;
+    margin: 0 auto;
+}
+
+.walls {
+    width: 180px;
+    height: 120px;
+    background: #3498db;
+    margin: -10px auto 0;
+    position: relative;
+    border-radius: 0 0 10px 10px;
+}
+
+.window {
+    width: 40px;
+    height: 40px;
+    background: #f1c40f;
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    border-radius: 5px;
+}
+
+.door {
+    width: 30px;
+    height: 60px;
+    background: #8b4513;
+    position: absolute;
+    bottom: 0;
+    right: 40px;
+    border-radius: 5px 5px 0 0;
+}
+
+.sensors {
+    position: absolute;
+}
+
+.sensor {
+    position: absolute;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border-radius: 20px;
+    font-size: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.sensor.temp {
+    top: 50px;
+    left: 0;
+}
+
+.sensor.humidity {
+    top: 120px;
+    right: 0;
+}
+
+.sensor.co2 {
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.features-section {
+    padding: 100px 0;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 -50px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.features-section h2 {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 50px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+}
+
+.feature-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
+.tech-section {
+    padding: 80px 0;
+}
+
+.tech-section h2 {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 50px;
+}
+
+.tech-stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.tech-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 25px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.tech-item h4 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.tech-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tech-item li {
+    padding: 5px 0;
+    opacity: 0.8;
+}
+
+.landing-footer {
+    text-align: center;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-top: 50px;
+}
+
 .header {
     background: white;
     padding: 20px 30px;
@@ -207,13 +464,17 @@ body {
     border-radius: 12px;
     transition: all 0.3s ease;
     background: white;
+    cursor: pointer;
+}
+
+.device-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
 .device-card.on {
     border-color: #28a745;
     background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
 }
 
 .device-card.off {
@@ -277,7 +538,6 @@ body {
     flex-wrap: wrap;
 }
 
-/* Панель датчиков */
 .sensors-panel {
     background: white;
     padding: 25px;
@@ -361,7 +621,6 @@ body {
     color: #333;
 }
 
-/* Модальные окна */
 .modal {
     position: fixed;
     top: 0;
@@ -419,7 +678,25 @@ body {
     color: #333;
 }
 
-/* Утилиты */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #f5c6cb;
+}
+
 .hidden {
     display: none !important;
 }
@@ -429,7 +706,6 @@ body {
     pointer-events: none;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .main-content {
         grid-template-columns: 1fr;
@@ -459,6 +735,36 @@ body {
 
     .modal-content {
         padding: 20px;
+    }
+
+    .landing-nav {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .hero-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 30px 0;
+    }
+
+    .hero-content h1 {
+        font-size: 36px;
+    }
+
+    .hero-description {
+        font-size: 18px;
+    }
+
+    .landing-main {
+        padding: 0 20px;
+    }
+
+    .features-section {
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
