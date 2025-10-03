@@ -1,6 +1,8 @@
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
+import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
+import com.avelina_anton.bzhch.smart_house.demo.repositories.SmartHomeRepository;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.UsersRepository;
 import com.avelina_anton.bzhch.smart_house.demo.security.JwtUtils;
 import com.avelina_anton.bzhch.smart_house.demo.services.CustomUserDetailsService;
@@ -14,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,17 +25,20 @@ import java.util.Map;
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UsersRepository usersRepository;
+    private final SmartHomeRepository smartHomeRepository;
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UsersRepository usersRepository,
+                          SmartHomeRepository smartHomeRepository,
                           CustomUserDetailsService customUserDetailsService,
                           PasswordEncoder passwordEncoder,
                           JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.usersRepository = usersRepository;
+        this.smartHomeRepository = smartHomeRepository;
         this.customUserDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
@@ -42,18 +48,28 @@ public class AuthController {
     public ResponseEntity<?> register(@Valid @RequestBody User user) {
         try {
             if (usersRepository.existsByName(user.getName())) {
-                return ResponseEntity.badRequest().body("Username already taken");
+                return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
             if (usersRepository.findByEmail(user.getEmail()).isPresent()) {
-                return ResponseEntity.badRequest().body("Email already in use");
+                return ResponseEntity.badRequest().body(Map.of("error", "Email already in use"));
             }
 
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setCreatedAt(LocalDateTime.now());
             User savedUser = usersRepository.save(user);
 
-            return ResponseEntity.ok("User registered successfully");
+            // Автоматически создаем умный дом для нового пользователя
+            SmartHome smartHome = new SmartHome();
+            smartHome.setName("Дом " + savedUser.getName());
+            smartHome.setUser(savedUser);
+            smartHome.setCreatedAt(LocalDateTime.now());
+            smartHome.setUpdatedAt(LocalDateTime.now());
+            smartHomeRepository.save(smartHome);
+
+            return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", "Registration failed: " + e.getMessage()));
         }
     }
 
@@ -77,9 +93,9 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Login failed: " + e.getMessage()));
         }
     }
 }

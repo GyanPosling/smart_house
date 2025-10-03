@@ -20,7 +20,6 @@ public class JwtUtils {
 
     public JwtUtils(@Value("${jwt.secret}") String secret,
                     @Value("${jwt.expiration-ms}") long jwtExpirationMs) {
-        // Генерируем ключ из секретной строки
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.jwtExpirationMs = jwtExpirationMs;
     }
@@ -53,7 +52,6 @@ public class JwtUtils {
             return false;
         }
     }
-
 
     public String generateJwtToken(String username) {
         Map<String, Object> claims = new HashMap<>();

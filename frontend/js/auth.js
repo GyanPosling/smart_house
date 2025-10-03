@@ -21,14 +21,26 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             body: JSON.stringify(userData)
         });
 
-        if (response.ok) {
-            alert('✅ Регистрация успешна! Теперь войдите в систему.');
-            showLogin();
-            document.getElementById('registerForm').reset();
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Ошибка регистрации';
+
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (response.ok) {
+                alert('✅ ' + (data.message || 'Регистрация успешна! Теперь войдите в систему.'));
+                showLogin();
+                document.getElementById('registerForm').reset();
+                return;
+            } else {
+                errorMessage = data.error || data.message || 'Неизвестная ошибка';
+            }
         } else {
-            const error = await response.text();
-            alert('❌ Ошибка регистрации: ' + error);
+            const text = await response.text();
+            errorMessage = text || 'Ошибка сервера';
         }
+
+        alert('❌ Ошибка регистрации: ' + errorMessage);
+
     } catch (error) {
         alert('❌ Ошибка сети: ' + error.message);
     } finally {
@@ -59,20 +71,30 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             body: JSON.stringify(loginData)
         });
 
-        if (response.ok) {
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
-            token = data.jwt;
-            localStorage.setItem('token', token);
-            localStorage.setItem('username', loginData.name);
 
-            await fetchSmartHomeId(data.userId);
+            if (response.ok) {
+                token = data.jwt;
+                localStorage.setItem('token', token);
+                localStorage.setItem('username', loginData.name);
 
-            showMainPage();
-            document.getElementById('loginForm').reset();
+                await fetchSmartHomeId(data.userId);
+
+                showMainPage();
+                document.getElementById('loginForm').reset();
+                return;
+            } else {
+                const errorMessage = data.error || data.message || 'Неизвестная ошибка';
+                alert('❌ Ошибка входа: ' + errorMessage);
+            }
         } else {
-            const error = await response.text();
-            alert('❌ Ошибка входа: ' + error);
+            const text = await response.text();
+            alert('❌ Ошибка входа: ' + text);
         }
+
     } catch (error) {
         alert('❌ Ошибка сети или сервера: ' + error.message);
     } finally {
