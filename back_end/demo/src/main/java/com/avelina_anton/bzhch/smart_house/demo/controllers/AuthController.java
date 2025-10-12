@@ -1,11 +1,9 @@
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
-import com.avelina_anton.bzhch.smart_house.demo.repositories.SmartHomeRepository;
-import com.avelina_anton.bzhch.smart_house.demo.repositories.UsersRepository;
 import com.avelina_anton.bzhch.smart_house.demo.security.JwtUtils;
 import com.avelina_anton.bzhch.smart_house.demo.services.CustomUserDetailsService;
+import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +22,18 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
-    private final UsersRepository usersRepository;
-    private final SmartHomeRepository smartHomeRepository;
+    private final UsersService usersService;
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
     public AuthController(AuthenticationManager authenticationManager,
-                          UsersRepository usersRepository,
-                          SmartHomeRepository smartHomeRepository,
+                          UsersService usersService,
                           CustomUserDetailsService customUserDetailsService,
                           PasswordEncoder passwordEncoder,
                           JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
-        this.usersRepository = usersRepository;
-        this.smartHomeRepository = smartHomeRepository;
+        this.usersService = usersService;
         this.customUserDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
@@ -47,24 +42,15 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody User user) {
         try {
-            if (usersRepository.existsByName(user.getName())) {
+            if (usersService.findUserByName(user.getName()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
-            if (usersRepository.findByEmail(user.getEmail()).isPresent()) {
+            if (usersService.findUserByEmail(user.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email already in use"));
             }
 
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setCreatedAt(LocalDateTime.now());
-            User savedUser = usersRepository.save(user);
-
-            // Автоматически создаем умный дом для нового пользователя
-            SmartHome smartHome = new SmartHome();
-            smartHome.setName("Дом " + savedUser.getName());
-            smartHome.setUser(savedUser);
-            smartHome.setCreatedAt(LocalDateTime.now());
-            smartHome.setUpdatedAt(LocalDateTime.now());
-            smartHomeRepository.save(smartHome);
+            usersService.registerUser(user);
 
             return ResponseEntity.ok(Map.of("message", "User registered successfully"));
 
@@ -83,7 +69,7 @@ public class AuthController {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getName());
             String token = jwtUtils.generateJwtToken(userDetails.getUsername());
 
-            User foundUser = usersRepository.findByName(user.getName())
+            User foundUser = usersService.findUserByName(user.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             Map<String, Object> response = new HashMap<>();

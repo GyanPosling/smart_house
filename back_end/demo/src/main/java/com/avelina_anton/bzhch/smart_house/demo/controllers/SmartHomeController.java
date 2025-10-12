@@ -2,6 +2,7 @@ package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,19 +21,14 @@ public class SmartHomeController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<SmartHome> getSmartHomeByUserId(@PathVariable Long userId) {
-        try {
-            SmartHome smartHome = smartHomeService.findByUserId(userId);
-            if (smartHome != null) {
-                return ResponseEntity.ok(smartHome);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        SmartHome smartHome = smartHomeService.findByUserId(userId);
+        if (smartHome != null) {
+            return ResponseEntity.ok(smartHome);
+        } else {
+            throw new SmartHomeNotFoundException("Умный дом для пользователя с id " + userId + " не найден");
         }
     }
 
-    // остальные методы остаются без изменений
     @PostMapping
     public ResponseEntity<SmartHome> createSmartHome(@RequestBody SmartHome smartHome) {
         SmartHome createdSmartHome = smartHomeService.save(smartHome);
@@ -47,9 +43,9 @@ public class SmartHomeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SmartHome> getSmartHomeById(@PathVariable Long id) {
-        return smartHomeService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        SmartHome smartHome = smartHomeService.findById(id)
+                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + id + " не найден"));
+        return ResponseEntity.ok(smartHome);
     }
 
     @PutMapping("/{id}")

@@ -1,10 +1,8 @@
-// UsersService.java
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,44 +10,44 @@ import java.util.Optional;
 
 @Service
 public class UsersService {
-    private final UsersRepository usersRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UsersService(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
-        this.usersRepository = usersRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UsersRepository userRepository;
 
-    public User registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return usersRepository.save(user);
-    }
-
-    public Optional<User> findUserByEmail(String email) {
-        return usersRepository.findByEmail(email);
-    }
-
-    public Optional<User> findUserById(Long id) {
-        return usersRepository.findById(id);
+    public UsersService(UsersRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public List<User> getAllUsers() {
-        return usersRepository.findAll();
+        return userRepository.findAll();
+    }
+
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<User> findUserByName(String name) {
+        return userRepository.findByName(name);
+    }
+
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public User registerUser(User user) {
+        if (findUserByName(user.getName()).isPresent()) {
+            throw new SmartHomeException("Имя пользователя уже занято");
+        }
+        if (findUserByEmail(user.getEmail()).isPresent()) {
+            throw new SmartHomeException("Email уже используется");
+        }
+        return userRepository.save(user);
     }
 
     public User updateUser(User user) {
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
-        return usersRepository.save(user);
+        return userRepository.save(user);
     }
 
     public void deleteUser(Long id) {
-        usersRepository.deleteById(id);
-    }
-
-    public boolean validatePassword(String rawPassword, String encodedPassword) {
-        return passwordEncoder.matches(rawPassword, encodedPassword);
+        userRepository.deleteById(id);
     }
 }

@@ -4,6 +4,7 @@ import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
 import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.SensorsRepository;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SensorNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,42 +12,32 @@ import java.util.Optional;
 
 @Service
 public class SensorsService {
-    private final SensorsRepository sensorsRepository;
 
-    public SensorsService(SensorsRepository sensorsRepository) {
-        this.sensorsRepository = sensorsRepository;
+    private final SensorsRepository sensorRepository;
+
+    public SensorsService(SensorsRepository sensorRepository) {
+        this.sensorRepository = sensorRepository;
     }
 
     public List<Sensor> getSensorsBySmartHome(SmartHome smartHome) {
-        return sensorsRepository.findBySmartHome(smartHome);
+        return sensorRepository.findBySmartHome(smartHome);
+    }
+
+    public Sensor getSensorById(Long id) {
+        return sensorRepository.findById(id)
+                .orElseThrow(() -> new SensorNotFoundException("Датчик с id " + id + " не найден"));
     }
 
     public List<Sensor> getSensorsBySmartHomeAndType(SmartHome smartHome, SensorType type) {
-        return sensorsRepository.findBySmartHomeAndType(smartHome, type);
-    }
-
-
-    public List<Sensor> getSensorsByType(SensorType type) {
-        return sensorsRepository.findByType(type);
-    }
-
-    public Optional<Sensor> getSensorByType(SensorType type) {
-        return sensorsRepository.findByType(type).stream().findFirst();
-    }
-
-    public List<Sensor> getAllSensors() {
-        return sensorsRepository.findAll();
+        return sensorRepository.findBySmartHomeAndType(smartHome, type);
     }
 
     public Sensor saveSensor(Sensor sensor) {
-        return sensorsRepository.save(sensor);
-    }
-
-    public Optional<Sensor> getSensorById(Long id) {
-        return sensorsRepository.findById(id);
+        return sensorRepository.save(sensor);
     }
 
     public void deleteSensor(Long id) {
-        sensorsRepository.deleteById(id);
+        Sensor sensor = getSensorById(id);
+        sensorRepository.delete(sensor);
     }
 }

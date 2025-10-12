@@ -1,16 +1,16 @@
-// UserController.java
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.dto.UserDTO;
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,20 +34,15 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        if (id <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
-        }
-        return usersService.findUserById(id)
-                .map(user -> ResponseEntity.ok(modelMapper.map(user, UserDTO.class)))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
+        User user = usersService.findUserById(id)
+                .orElseThrow(() -> new SmartHomeException("Пользователь с id " + id + " не найден"));
+        return ResponseEntity.ok(modelMapper.map(user, UserDTO.class));
     }
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
-        if (userDTO.getEmail() == null || userDTO.getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email и пароль обязательны");
-        }
         User user = modelMapper.map(userDTO, User.class);
+        user.setCreatedAt(LocalDateTime.now());
         User savedUser = usersService.registerUser(user);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(modelMapper.map(savedUser, UserDTO.class));
@@ -55,28 +50,22 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
-        if (id <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
-        }
-        return usersService.findUserById(id)
-                .map(existingUser -> {
-                    User user = modelMapper.map(userDTO, User.class);
-                    user.setId(id);
-                    User updatedUser = usersService.updateUser(user);
-                    return ResponseEntity.ok(modelMapper.map(updatedUser, UserDTO.class));
-                })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
+        User existingUser = usersService.findUserById(id)
+                .orElseThrow(() -> new SmartHomeException("Пользователь с id " + id + " не найден"));
+
+        User user = modelMapper.map(userDTO, User.class);
+        user.setId(id);
+        user.setCreatedAt(existingUser.getCreatedAt());
+
+        User updatedUser = usersService.updateUser(user);
+        return ResponseEntity.ok(modelMapper.map(updatedUser, UserDTO.class));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (id <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Недопустимый ID пользователя");
-        }
-        if (usersService.findUserById(id).isPresent()) {
-            usersService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
+        User user = usersService.findUserById(id)
+                .orElseThrow(() -> new SmartHomeException("Пользователь с id " + id + " не найден"));
+        usersService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
