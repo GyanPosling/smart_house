@@ -17,7 +17,7 @@ public class SmartHomeService {
         this.smartHomeRepository = smartHomeRepository;
     }
 
-    public Optional<SmartHome> findByUserId(Long userId) {
+    public SmartHome findByUserId(Long userId) {
         return smartHomeRepository.findByUserId(userId);
     }
 

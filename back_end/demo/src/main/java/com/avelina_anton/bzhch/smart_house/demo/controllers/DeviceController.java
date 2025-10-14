@@ -9,6 +9,7 @@ import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.DeviceNotFoundException;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.DeviceValidator;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.ErrorsUtil;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeNotFoundException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,8 @@ public class DeviceController {
     }
 
     private SmartHome getSmartHome(Long smartHomeId) {
-        return smartHomeService.findById(smartHomeId);
+        return smartHomeService.findById(smartHomeId)
+                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + smartHomeId + " не найден"));
     }
 
     @GetMapping

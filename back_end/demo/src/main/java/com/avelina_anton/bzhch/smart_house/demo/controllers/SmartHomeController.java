@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/smarthome")
@@ -29,6 +30,13 @@ public class SmartHomeController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SmartHome> getSmartHomeById(@PathVariable Long id) {
+        SmartHome smartHome = smartHomeService.findById(id)
+                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + id + " не найден"));
+        return ResponseEntity.ok(smartHome);
+    }
+
     @PostMapping
     public ResponseEntity<SmartHome> createSmartHome(@RequestBody SmartHome smartHome) {
         SmartHome createdSmartHome = smartHomeService.save(smartHome);
@@ -41,12 +49,7 @@ public class SmartHomeController {
         return ResponseEntity.ok(smartHomes);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SmartHome> getSmartHomeById(@PathVariable Long id) {
-        SmartHome smartHome = smartHomeService.findById(id)
-                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + id + " не найден"));
-        return ResponseEntity.ok(smartHome);
-    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<SmartHome> updateSmartHome(@PathVariable Long id, @RequestBody SmartHome smartHomeDetails) {

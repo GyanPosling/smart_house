@@ -20,6 +20,10 @@ public class DevicesService {
         this.deviceRepository = deviceRepository;
     }
 
+    public List<Device> findAll() {
+        return deviceRepository.findAll();
+    }
+
     public List<Device> findBySmartHome(SmartHome smartHome) {
         return deviceRepository.findBySmartHome(smartHome);
     }

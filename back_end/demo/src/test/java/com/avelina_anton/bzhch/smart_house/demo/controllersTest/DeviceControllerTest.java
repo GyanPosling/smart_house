@@ -1,12 +1,15 @@
 //package com.avelina_anton.bzhch.smart_house.demo.controllers;
 //
 //import com.avelina_anton.bzhch.smart_house.demo.dto.DeviceDTO;
+//import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 //import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 //import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 //import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus;
 //import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceType;
 //import com.avelina_anton.bzhch.smart_house.demo.services.DevicesService;
-//import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
+//import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
+//import com.avelina_anton.bzhch.smart_house.demo.utils.DeviceValidator;
+//import com.avelina_anton.bzhch.smart_house.demo.utils.ErrorsUtil;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import org.junit.jupiter.api.Test;
 //import org.modelmapper.ModelMapper;
@@ -37,45 +40,68 @@
 //    private ModelMapper modelMapper;
 //
 //    @MockBean
-//    private UsersService usersService;
+//    private SmartHomeService smartHomeService;
+//
+//    @MockBean
+//    private DeviceValidator deviceValidator;
+//
+//    @MockBean
+//    private ErrorsUtil errorsUtil;
 //
 //    @Autowired
 //    private ObjectMapper objectMapper;
 //
-//    @Test
-//    void getAllDevices_ShouldReturnDevices() throws Exception {
+//    private SmartHome createTestSmartHome() {
+//        SmartHome smartHome = new SmartHome();
+//        smartHome.setId(1L);
+//        smartHome.setName("Test Home");
+//        return smartHome;
+//    }
+//
+//    private Device createTestDevice() {
 //        Device device = new Device();
 //        device.setId(1L);
 //        device.setType(DeviceType.HEATER);
+//        device.setName("Test Device");
+//        device.setSmartHome(createTestSmartHome());
+//        return device;
+//    }
 //
+//    private DeviceDTO createTestDeviceDTO() {
 //        DeviceDTO dto = new DeviceDTO();
 //        dto.setId(1L);
 //        dto.setType(DeviceType.HEATER);
+//        dto.setName("Test Device");
+//        return dto;
+//    }
 //
-//        when(devicesService.findAll()).thenReturn(Arrays.asList(device));
+//    @Test
+//    void getSmartHomeDevices_ShouldReturnDevices() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
+//        DeviceDTO dto = createTestDeviceDTO();
+//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.findBySmartHome(smartHome)).thenReturn(Arrays.asList(device));
 //        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
 //
-//        mockMvc.perform(get("/smart_house/devices"))
+//        mockMvc.perform(get("/smarthome/1/devices"))
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$[0].id").value(1));
 //    }
 //
 //    @Test
-//    void addDevice_Valid_ShouldAdd() throws Exception {
-//        DeviceDTO dto = new DeviceDTO();
-//        dto.setType(DeviceType.HEATER);
-//        dto.setName("Test");
+//    void addDeviceToSmartHome_Valid_ShouldAdd() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//        DeviceDTO dto = createTestDeviceDTO();
+//        Device device = createTestDevice();
 //
-//        Device device = new Device();
-//        device.setId(1L);
-//        device.setType(DeviceType.HEATER);
-//        device.setName("Test");
-//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
 //        when(modelMapper.map(dto, Device.class)).thenReturn(device);
 //        when(devicesService.save(device)).thenReturn(device);
 //        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
 //
-//        mockMvc.perform(post("/smart_house/devices")
+//        mockMvc.perform(post("/smarthome/1/devices")
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(objectMapper.writeValueAsString(dto)))
 //                .andExpect(status().isCreated())
@@ -83,55 +109,119 @@
 //    }
 //
 //    @Test
+//    void getDeviceById_Valid_ShouldReturnDevice() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
+//        DeviceDTO dto = createTestDeviceDTO();
+//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.findById(1L)).thenReturn(device);
+//        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
+//
+//        mockMvc.perform(get("/smarthome/1/devices/1"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.id").value(1));
+//    }
+//
+//    @Test
 //    void updateDevice_Valid_ShouldUpdate() throws Exception {
-//        DeviceDTO dto = new DeviceDTO();
-//        dto.setType(DeviceType.HEATER);
-//        dto.setName("Updated");
+//        SmartHome smartHome = createTestSmartHome();
+//        Device existingDevice = createTestDevice();
+//        DeviceDTO dto = createTestDeviceDTO();
+//        dto.setName("Updated Name");
 //
-//        Device existing = new Device();
-//        existing.setId(1L);
-//        existing.setType(DeviceType.HEATER);
+//        Device updatedDevice = createTestDevice();
+//        updatedDevice.setName("Updated Name");
 //
-//        Device updated = new Device();
-//        updated.setId(1L);
-//        updated.setType(DeviceType.HEATER);
-//        updated.setName("Updated");
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.findById(1L)).thenReturn(existingDevice);
+//        when(modelMapper.map(dto, Device.class)).thenReturn(updatedDevice);
+//        when(devicesService.save(updatedDevice)).thenReturn(updatedDevice);
+//        when(modelMapper.map(updatedDevice, DeviceDTO.class)).thenReturn(dto);
 //
-//        when(devicesService.findById(1L)).thenReturn(Optional.of(existing));
-//        when(modelMapper.map(dto, Device.class)).thenReturn(updated);
-//        when(devicesService.save(updated)).thenReturn(updated);
-//        when(modelMapper.map(updated, DeviceDTO.class)).thenReturn(dto);
-//
-//        mockMvc.perform(put("/smart_house/devices/1")
+//        mockMvc.perform(put("/smarthome/1/devices/1")
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(objectMapper.writeValueAsString(dto)))
 //                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.name").value("Updated"));
+//                .andExpect(jsonPath("$.name").value("Updated Name"));
 //    }
 //
 //    @Test
 //    void deleteDevice_Valid_ShouldDelete() throws Exception {
-//        when(devicesService.findById(1L)).thenReturn(Optional.of(new Device()));
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
 //
-//        mockMvc.perform(delete("/smart_house/devices/1"))
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.findById(1L)).thenReturn(device);
+//
+//        mockMvc.perform(delete("/smarthome/1/devices/1"))
 //                .andExpect(status().isNoContent());
+//
+//        verify(devicesService, times(1)).deleteDevice(1L);
 //    }
 //
 //    @Test
 //    void turnOnDevice_Valid_ShouldTurnOn() throws Exception {
-//        Device device = new Device();
-//        device.setId(1L);
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
 //        device.setStatus(DeviceStatus.ON);
 //
-//        DeviceDTO dto = new DeviceDTO();
-//        dto.setId(1L);
+//        DeviceDTO dto = createTestDeviceDTO();
 //        dto.setStatus(DeviceStatus.ON);
 //
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
 //        when(devicesService.turnOnDevice(1L)).thenReturn(device);
 //        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
 //
-//        mockMvc.perform(patch("/smart_house/devices/1/on"))
+//        mockMvc.perform(patch("/smarthome/1/devices/1/on"))
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.status").value("ON"));
+//    }
+//
+//    @Test
+//    void turnOffDevice_Valid_ShouldTurnOff() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
+//        device.setStatus(DeviceStatus.OFF);
+//
+//        DeviceDTO dto = createTestDeviceDTO();
+//        dto.setStatus(DeviceStatus.OFF);
+//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.turnOffDevice(1L)).thenReturn(device);
+//        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
+//
+//        mockMvc.perform(patch("/smarthome/1/devices/1/off"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.status").value("OFF"));
+//    }
+//
+//    @Test
+//    void setAutoMode_Valid_ShouldSetAuto() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//        Device device = createTestDevice();
+//        device.setMode(DeviceMode.AUTO);
+//
+//        DeviceDTO dto = createTestDeviceDTO();
+//        dto.setMode(DeviceMode.AUTO);
+//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.setAutomationMode(1L)).thenReturn(device);
+//        when(modelMapper.map(device, DeviceDTO.class)).thenReturn(dto);
+//
+//        mockMvc.perform(patch("/smarthome/1/devices/1/auto"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.mode").value("AUTO"));
+//    }
+//
+//    @Test
+//    void getDeviceById_DeviceNotFound_ShouldReturnNotFound() throws Exception {
+//        SmartHome smartHome = createTestSmartHome();
+//
+//        when(smartHomeService.findById(1L)).thenReturn(Optional.of(smartHome));
+//        when(devicesService.findById(1L)).thenReturn(null);
+//
+//        mockMvc.perform(get("/smarthome/1/devices/1"))
+//                .andExpect(status().isNotFound());
 //    }
 //}

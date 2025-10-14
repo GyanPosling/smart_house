@@ -35,7 +35,6 @@ public class SensorDataSimulator {
 
     @Scheduled(fixedRate = 5000)
     public void simulateSensorData() {
-        // Проверяем, есть ли устройства в ручном режиме
         boolean hasManualDevices = devicesService.findAll().stream()
                 .anyMatch(device -> device.getStatus() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus.ON &&
                         device.getMode() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode.MANUAL);

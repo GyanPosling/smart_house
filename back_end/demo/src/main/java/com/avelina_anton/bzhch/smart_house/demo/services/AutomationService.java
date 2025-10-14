@@ -46,9 +46,8 @@ public class AutomationService {
     }
 
     private void processSmartHome(SmartHome smartHome) {
-        List<Device> allDevices = devicesService.findByUserId(smartHome.getUser().getId());
+        List<Device> allDevices = devicesService.findBySmartHome(smartHome);
 
-        // Работаем только с устройствами в авторежиме
         List<Device> autoDevices = allDevices.stream()
                 .filter(device -> device.getMode() == DeviceMode.AUTO)
                 .collect(Collectors.toList());
@@ -58,7 +57,7 @@ public class AutomationService {
         Map<DeviceType, List<Device>> devicesByType = autoDevices.stream()
                 .collect(Collectors.groupingBy(Device::getType));
 
-        List<Sensor> allSensors = sensorsService.getAllSensors();
+        List<Sensor> allSensors = sensorsService.getSensorsBySmartHome(smartHome);
         Map<SensorType, List<Sensor>> sensorsByType = allSensors.stream()
                 .collect(Collectors.groupingBy(Sensor::getType));
 
@@ -76,19 +75,16 @@ public class AutomationService {
         List<Device> heaters = devicesByType.getOrDefault(DeviceType.HEATER, List.of());
         List<Device> conditioners = devicesByType.getOrDefault(DeviceType.AIR_CONDITIONER, List.of());
 
-        // Выключаем все авто-устройства, если в зоне комфорта
         if (avgTemp >= TEMP_COMFORT_MIN && avgTemp <= TEMP_COMFORT_MAX) {
             setDevicesStatus(heaters, DeviceStatus.OFF, 0);
             setDevicesStatus(conditioners, DeviceStatus.OFF, 0);
             return;
         }
 
-        // Если слишком холодно - включаем обогреватели
         if (avgTemp < TEMP_COMFORT_MIN) {
             setDevicesStatus(heaters, DeviceStatus.ON, calculatePowerLevel(avgTemp, TEMP_COMFORT_MIN, 100));
             setDevicesStatus(conditioners, DeviceStatus.OFF, 0);
         }
-        // Если слишком жарко - включаем кондиционеры
         else if (avgTemp > TEMP_COMFORT_MAX) {
             setDevicesStatus(heaters, DeviceStatus.OFF, 0);
             setDevicesStatus(conditioners, DeviceStatus.ON, calculatePowerLevel(avgTemp, TEMP_COMFORT_MAX, 100));
@@ -104,19 +100,17 @@ public class AutomationService {
         List<Device> humidifiers = devicesByType.getOrDefault(DeviceType.HUMIDIFIER, List.of());
         List<Device> dehumidifiers = devicesByType.getOrDefault(DeviceType.DEHUMIDIFIER, List.of());
 
-        // Выключаем все, если в зоне комфорта
         if (avgHumidity >= HUMIDITY_COMFORT_MIN && avgHumidity <= HUMIDITY_COMFORT_MAX) {
             setDevicesStatus(humidifiers, DeviceStatus.OFF, 0);
             setDevicesStatus(dehumidifiers, DeviceStatus.OFF, 0);
             return;
         }
 
-        // Если слишком сухо - включаем увлажнители
         if (avgHumidity < HUMIDITY_COMFORT_MIN) {
             setDevicesStatus(humidifiers, DeviceStatus.ON, calculatePowerLevel(avgHumidity, HUMIDITY_COMFORT_MIN, 100));
             setDevicesStatus(dehumidifiers, DeviceStatus.OFF, 0);
         }
-        // Если слишком влажно - включаем осушители
+
         else if (avgHumidity > HUMIDITY_COMFORT_MAX) {
             setDevicesStatus(humidifiers, DeviceStatus.OFF, 0);
             setDevicesStatus(dehumidifiers, DeviceStatus.ON, calculatePowerLevel(avgHumidity, HUMIDITY_COMFORT_MAX, 100));
@@ -131,13 +125,11 @@ public class AutomationService {
 
         List<Device> ventilators = devicesByType.getOrDefault(DeviceType.VENTILATOR, List.of());
 
-        // Выключаем, если в зоне комфорта
         if (avgCo2 <= CO2_COMFORT_MAX) {
             setDevicesStatus(ventilators, DeviceStatus.OFF, 0);
             return;
         }
 
-        // Если CO2 высокий - включаем вентиляцию
         if (avgCo2 > CO2_COMFORT_MAX) {
             setDevicesStatus(ventilators, DeviceStatus.ON, calculatePowerLevel(avgCo2, CO2_COMFORT_MAX, 100));
         }
@@ -145,7 +137,6 @@ public class AutomationService {
 
     private int calculatePowerLevel(double currentValue, double targetValue, int maxPower) {
         double difference = Math.abs(currentValue - targetValue);
-        // Чем больше разница, тем выше мощность
         double powerRatio = Math.min(difference / 5.0, 1.0); // Нормализуем разницу
         return (int) (maxPower * powerRatio);
     }
@@ -153,8 +144,9 @@ public class AutomationService {
     private void setDevicesStatus(List<Device> devices, DeviceStatus status, int powerLevel) {
         devices.forEach(device -> {
             try {
-                // В авторежиме устройства работают только пока не достигнут зону комфорта
-                devicesService.setDeviceStatusAndPower(device, status, powerLevel);
+                device.setStatus(status);
+                device.setPowerLevel(powerLevel);
+                devicesService.save(device);
                 logger.info("Авторежим: {} {} ({}%)",
                         device.getName(),
                         status == DeviceStatus.ON ? "включен" : "выключен",

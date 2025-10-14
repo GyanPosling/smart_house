@@ -9,6 +9,7 @@ import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.ErrorsUtil;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.SensorNotFoundException;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.SensorValidator;
+import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeNotFoundException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -35,10 +36,12 @@ public class SensorController {
         this.sensorValidator = sensorValidator;
     }
 
-    private SmartHome getSmartHome(Long smartHomeId) {
-        return smartHomeService.findById(smartHomeId);
-    }
 
+    private SmartHome getSmartHome(Long smartHomeId) {
+        return smartHomeService.findById(smartHomeId)
+                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + smartHomeId + " не найден"));
+    }
+    
     @GetMapping
     public List<SensorDTO> getSmartHomeSensors(@PathVariable Long smartHomeId) {
         SmartHome smartHome = getSmartHome(smartHomeId);

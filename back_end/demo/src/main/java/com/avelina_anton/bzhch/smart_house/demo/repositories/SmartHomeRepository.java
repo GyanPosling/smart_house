@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface SmartHomeRepository extends JpaRepository<SmartHome, Long> {
 
     @Query("SELECT sh FROM SmartHome sh WHERE sh.user.id = :userId")
-    Optional<SmartHome> findByUserId(@Param("userId") Long userId);
+    SmartHome findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(sh) > 0 FROM SmartHome sh WHERE sh.user.id = :userId")
     boolean existsByUserId(@Param("userId") Long userId);
