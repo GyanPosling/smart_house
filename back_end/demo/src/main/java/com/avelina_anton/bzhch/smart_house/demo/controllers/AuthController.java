@@ -50,10 +50,12 @@ public class AuthController {
             }
 
             user.setCreatedAt(LocalDateTime.now());
-            usersService.registerUser(user);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            User savedUser = usersService.registerUser(user);
+
+            usersService.createDefaultSensorsForUser(savedUser);
 
             return ResponseEntity.ok(Map.of("message", "User registered successfully"));
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Registration failed: " + e.getMessage()));
         }

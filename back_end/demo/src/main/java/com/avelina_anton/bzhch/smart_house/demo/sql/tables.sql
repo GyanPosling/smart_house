@@ -7,27 +7,18 @@ CREATE TABLE users (
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица умных домов
-CREATE TABLE smart_homes (
-                             id SERIAL PRIMARY KEY,
-                             name VARCHAR(100) NOT NULL,
-                             user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Таблица датчиков (теперь связана с умным домом)
+-- Таблица датчиков
 CREATE TABLE sensors (
                          id SERIAL PRIMARY KEY,
                          type VARCHAR(20) NOT NULL CHECK (type IN ('TEMPERATURE', 'HUMIDITY', 'CO2', 'NOISE')),
                          value DOUBLE PRECISION NOT NULL,
                          location VARCHAR(100),
-                         smart_home_id INTEGER REFERENCES smart_homes(id) ON DELETE CASCADE,
+                         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица устройств (теперь связана с умным домом вместо пользователя)
+-- Таблица устройств
 CREATE TABLE devices (
                          id SERIAL PRIMARY KEY,
                          name VARCHAR(100) NOT NULL,
@@ -41,8 +32,7 @@ CREATE TABLE devices (
                          current_temperature INTEGER,
                          target_humidity INTEGER,
                          current_humidity INTEGER,
-                         smart_home_id INTEGER REFERENCES smart_homes(id) ON DELETE CASCADE,
-                         user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

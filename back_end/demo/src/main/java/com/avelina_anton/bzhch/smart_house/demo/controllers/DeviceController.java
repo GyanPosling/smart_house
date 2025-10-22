@@ -1,15 +1,13 @@
 package com.avelina_anton.bzhch.smart_house.demo.controllers;
 
 import com.avelina_anton.bzhch.smart_house.demo.dto.DeviceDTO;
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
+import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 import com.avelina_anton.bzhch.smart_house.demo.services.DevicesService;
-import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
-
+import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.DeviceNotFoundException;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.DeviceValidator;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.ErrorsUtil;
-import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeNotFoundException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -21,46 +19,46 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/smarthome/{smartHomeId}/devices")
+@RequestMapping("/users/{userId}/devices")
 public class DeviceController {
     private final DevicesService devicesService;
     private final ModelMapper modelMapper;
-    private final SmartHomeService smartHomeService;
+    private final UsersService usersService;
     private final DeviceValidator deviceValidator;
 
     public DeviceController(DevicesService devicesService, ModelMapper modelMapper,
-                            SmartHomeService smartHomeService, DeviceValidator deviceValidator) {
+                            UsersService usersService, DeviceValidator deviceValidator) {
         this.devicesService = devicesService;
         this.modelMapper = modelMapper;
-        this.smartHomeService = smartHomeService;
+        this.usersService = usersService;
         this.deviceValidator = deviceValidator;
     }
 
-    private SmartHome getSmartHome(Long smartHomeId) {
-        return smartHomeService.findById(smartHomeId)
-                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + smartHomeId + " не найден"));
+    private User getUser(Long userId) {
+        return usersService.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь с id " + userId + " не найден"));
     }
 
     @GetMapping
-    public List<DeviceDTO> getSmartHomeDevices(@PathVariable Long smartHomeId) {
-        SmartHome smartHome = getSmartHome(smartHomeId);
-        return devicesService.findBySmartHome(smartHome).stream()
+    public List<DeviceDTO> getUserDevices(@PathVariable Long userId) {
+        User user = getUser(userId);
+        return devicesService.findByUser(user).stream()
                 .map(device -> modelMapper.map(device, DeviceDTO.class))
                 .collect(Collectors.toList());
     }
 
     @PostMapping
-    public ResponseEntity<DeviceDTO> addDeviceToSmartHome(@PathVariable Long smartHomeId,
-                                                          @Valid @RequestBody DeviceDTO deviceDTO,
-                                                          BindingResult bindingResult) {
+    public ResponseEntity<DeviceDTO> addDeviceToUser(@PathVariable Long userId,
+                                                     @Valid @RequestBody DeviceDTO deviceDTO,
+                                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             ErrorsUtil.returnErrorsToClient(bindingResult);
         }
 
-        SmartHome smartHome = getSmartHome(smartHomeId);
+        User user = getUser(userId);
 
         Device device = modelMapper.map(deviceDTO, Device.class);
-        device.setSmartHome(smartHome);
+        device.setUser(user);
 
         deviceValidator.validate(device, bindingResult);
         if (bindingResult.hasErrors()) {
@@ -73,20 +71,20 @@ public class DeviceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DeviceDTO> getDeviceById(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<DeviceDTO> getDeviceById(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
 
         Device device = devicesService.findById(id);
 
-        if (!device.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!device.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
 
         return ResponseEntity.ok(modelMapper.map(device, DeviceDTO.class));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DeviceDTO> updateDevice(@PathVariable Long smartHomeId,
+    public ResponseEntity<DeviceDTO> updateDevice(@PathVariable Long userId,
                                                   @PathVariable Long id,
                                                   @Valid @RequestBody DeviceDTO deviceDTO,
                                                   BindingResult bindingResult) {
@@ -94,17 +92,17 @@ public class DeviceController {
             ErrorsUtil.returnErrorsToClient(bindingResult);
         }
 
-        getSmartHome(smartHomeId);
+        getUser(userId);
 
         Device existingDevice = devicesService.findById(id);
 
-        if (!existingDevice.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!existingDevice.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
 
         Device device = modelMapper.map(deviceDTO, Device.class);
         device.setId(id);
-        device.setSmartHome(existingDevice.getSmartHome());
+        device.setUser(existingDevice.getUser());
 
         deviceValidator.validate(device, bindingResult);
         if (bindingResult.hasErrors()) {
@@ -116,13 +114,13 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDevice(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<Void> deleteDevice(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
 
         Device device = devicesService.findById(id);
 
-        if (!device.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!device.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
 
         devicesService.deleteDevice(id);
@@ -130,31 +128,31 @@ public class DeviceController {
     }
 
     @PatchMapping("/{id}/on")
-    public ResponseEntity<DeviceDTO> turnOnDevice(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<DeviceDTO> turnOnDevice(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
         Device device = devicesService.turnOnDevice(id);
-        if (!device.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!device.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
         return ResponseEntity.ok(modelMapper.map(device, DeviceDTO.class));
     }
 
     @PatchMapping("/{id}/off")
-    public ResponseEntity<DeviceDTO> turnOffDevice(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<DeviceDTO> turnOffDevice(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
         Device device = devicesService.turnOffDevice(id);
-        if (!device.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!device.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
         return ResponseEntity.ok(modelMapper.map(device, DeviceDTO.class));
     }
 
     @PatchMapping("/{id}/auto")
-    public ResponseEntity<DeviceDTO> setAutoMode(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<DeviceDTO> setAutoMode(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
         Device device = devicesService.setAutomationMode(id);
-        if (!device.getSmartHome().getId().equals(smartHomeId)) {
-            throw new DeviceNotFoundException("Устройство не принадлежит умному дому с id " + smartHomeId);
+        if (!device.getUser().getId().equals(userId)) {
+            throw new DeviceNotFoundException("Устройство не принадлежит пользователю с id " + userId);
         }
         return ResponseEntity.ok(modelMapper.map(device, DeviceDTO.class));
     }

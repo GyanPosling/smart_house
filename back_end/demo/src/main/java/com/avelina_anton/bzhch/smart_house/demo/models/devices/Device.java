@@ -1,7 +1,5 @@
-// Device.java
 package com.avelina_anton.bzhch.smart_house.demo.models.devices;
 
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -40,10 +38,6 @@ public class Device {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "smart_home_id")
-    private SmartHome smartHome;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -70,6 +64,4 @@ public class Device {
     public boolean supportsHumidityControl() {
         return type == DeviceType.HUMIDIFIER || type == DeviceType.DEHUMIDIFIER;
     }
-
-
 }

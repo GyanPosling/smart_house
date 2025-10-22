@@ -25,6 +25,7 @@ public class SimulationService {
     public SimulationService(SensorsRepository sensorsRepository, DevicesService devicesService) {
         this.sensorsRepository = sensorsRepository;
         this.devicesService = devicesService;
+        // Начальные значения вне зоны комфорта (переопределяются SensorDataSimulator)
         environmentState.put(SensorType.TEMPERATURE, 22.0);
         environmentState.put(SensorType.HUMIDITY, 40.0);
         environmentState.put(SensorType.CO2, 600.0);
@@ -49,11 +50,9 @@ public class SimulationService {
         if (targetSensorType == null) return;
 
         double currentValue = environmentState.getOrDefault(targetSensorType, 0.0);
-        double influence = calculateInfluence(device.getType(), device.getPowerLevel());
+        double influence = calculateInfluence(device.getType(), device.getPowerLevel(), currentValue);
         double newValue = currentValue + influence;
 
-        // Для устройств в РУЧНОМ режиме - применяем влияние без ограничений
-        // Для устройств в АВТОРЕЖИМЕ - ограничиваем зоной комфорта
         if (device.getMode() == DeviceMode.AUTO) {
             newValue = applyComfortLimits(targetSensorType, newValue);
         }
@@ -85,27 +84,26 @@ public class SimulationService {
         }
     }
 
-    private double calculateInfluence(com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceType deviceType, int powerLevel) {
+    private double calculateInfluence(com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceType deviceType, int powerLevel, double currentValue) {
         double influenceFactor = powerLevel / 100.0;
 
         switch (deviceType) {
             case HEATER:
-                return 0.5 * influenceFactor; // Нагрев
+                return (currentValue < 24.0) ? 0.5 * influenceFactor : 0.0; // Только повышаем, если ниже максимума
             case AIR_CONDITIONER:
-                return -0.7 * influenceFactor; // Охлаждение
+                return (currentValue > 20.0) ? -0.7 * influenceFactor : 0.0; // Только понижаем, если выше минимума
             case HUMIDIFIER:
-                return 1.5 * influenceFactor; // Увлажнение
+                return (currentValue < 45.0) ? 1.5 * influenceFactor : 0.0; // Только повышаем, если ниже максимума
             case DEHUMIDIFIER:
-                return -1.5 * influenceFactor; // Осушение
+                return (currentValue > 30.0) ? -1.5 * influenceFactor : 0.0; // Только понижаем, если выше минимума
             case VENTILATOR:
-                return -50.0 * influenceFactor; // Снижение CO2
+                return (currentValue > 400.0) ? -50.0 * influenceFactor : 0.0; // Только понижаем, если выше минимума
             default:
                 return 0.0;
         }
     }
 
     private double applyComfortLimits(SensorType type, double value) {
-        // Только для авторежима - гарантируем зону комфорта
         switch (type) {
             case TEMPERATURE:
                 return Math.max(20.0, Math.min(24.0, value));

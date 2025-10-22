@@ -1,4 +1,3 @@
-// User.java
 package com.avelina_anton.bzhch.smart_house.demo.models;
 
 import jakarta.persistence.*;

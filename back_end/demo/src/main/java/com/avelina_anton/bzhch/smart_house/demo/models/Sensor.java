@@ -1,4 +1,3 @@
-// Sensor.java
 package com.avelina_anton.bzhch.smart_house.demo.models;
 
 import jakarta.persistence.*;
@@ -21,8 +20,8 @@ public class Sensor {
     private String location;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "smart_home_id")
-    private SmartHome smartHome;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

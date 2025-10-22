@@ -1,7 +1,7 @@
 async function loadSensors() {
-    if (!smartHomeId) return;
+    if (!userId) return;
     try {
-        const sensors = await apiCall(`/smarthome/${smartHomeId}/sensors`);
+        const sensors = await apiCall(`/users/${userId}/sensors`);
         displaySensors(sensors);
     } catch (error) {
         console.error('Ошибка загрузки датчиков:', error);
@@ -78,7 +78,6 @@ function showProfile() {
         profileInfo.innerHTML = '<p>❌ Информация о пользователе недоступна</p>';
     } else {
         profileInfo.innerHTML = `
-            <p><strong>🏠 Имя дома:</strong> ${currentUser.smartHomeName || 'Неизвестно'}</p>
             <p><strong>👤 Имя пользователя:</strong> ${currentUser.name}</p>
             <p><strong>📱 Количество устройств:</strong> ${currentUser.devicesCount || 0}</p>
             <p><strong>🕐 Последний вход:</strong> ${currentUser.lastLogin || 'Неизвестно'}</p>

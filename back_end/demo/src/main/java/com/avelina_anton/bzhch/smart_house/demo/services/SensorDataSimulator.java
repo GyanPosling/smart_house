@@ -3,10 +3,10 @@ package com.avelina_anton.bzhch.smart_house.demo.services;
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
 import com.avelina_anton.bzhch.smart_house.demo.repositories.SensorsRepository;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Random;
@@ -19,29 +19,30 @@ public class SensorDataSimulator {
     private final DevicesService devicesService;
     private final Random random = new Random();
 
-    // Допустимые пределы для дрифта (шире зоны комфорта)
-    private static final double TEMP_DRIFT_MIN = 18.0;
-    private static final double TEMP_DRIFT_MAX = 26.0;
-    private static final double HUMIDITY_DRIFT_MIN = 25.0;
-    private static final double HUMIDITY_DRIFT_MAX = 50.0;
-    private static final double CO2_DRIFT_MAX = 1200.0;
+    private static final double TEMP_DRIFT_MIN = 15.0;
+    private static final double TEMP_DRIFT_MAX = 30.0;
+    private static final double HUMIDITY_DRIFT_MIN = 20.0;
+    private static final double HUMIDITY_DRIFT_MAX = 60.0;
+    private static final double CO2_DRIFT_MAX = 1500.0;
 
     public SensorDataSimulator(SensorsRepository sensorsRepository, SimulationService simulationService,
                                DevicesService devicesService) {
         this.sensorsRepository = sensorsRepository;
         this.simulationService = simulationService;
         this.devicesService = devicesService;
+        // Начальные значения вне зоны комфорта
+        simulationService.environmentState.put(SensorType.TEMPERATURE, 18.0); // Ниже 20°C
+        simulationService.environmentState.put(SensorType.HUMIDITY, 25.0);    // Ниже 30%
+        simulationService.environmentState.put(SensorType.CO2, 1100.0);       // Выше 1000 ppm
+        simulationService.environmentState.put(SensorType.NOISE, 45.0);
     }
 
     @Scheduled(fixedRate = 5000)
     public void simulateSensorData() {
-        boolean hasManualDevices = devicesService.findAll().stream()
-                .anyMatch(device -> device.getStatus() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus.ON &&
-                        device.getMode() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode.MANUAL);
+        boolean hasActiveDevices = devicesService.findAll().stream()
+                .anyMatch(device -> device.getStatus() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus.ON);
 
-        // Если есть ручные устройства - дрифт минимальный (пользователь сам управляет)
-        // Если все устройства в авто или выключены - нормальный дрифт
-        double driftIntensity = hasManualDevices ? 0.1 : 1.0;
+        double driftIntensity = hasActiveDevices ? 0.5 : 2.0;
 
         driftTemperature(driftIntensity);
         driftHumidity(driftIntensity);
@@ -51,9 +52,13 @@ public class SensorDataSimulator {
 
     private void driftTemperature(double intensity) {
         double currentValue = simulationService.getSensorValue(SensorType.TEMPERATURE);
-        double driftAmount = (random.nextDouble() - 0.5) * 0.2 * intensity;
+        double driftAmount = (random.nextDouble() - 0.5) * 1.0 * intensity;
 
         double newValue = currentValue + driftAmount;
+        // Ограничиваем, чтобы оставаться вне зоны комфорта (20-24°C) при выключенных устройствах
+        if (!hasActiveDevices()) {
+            newValue = clampOutsideComfort(newValue, 20.0, 24.0);
+        }
         newValue = Math.max(TEMP_DRIFT_MIN, Math.min(TEMP_DRIFT_MAX, newValue));
 
         simulationService.environmentState.put(SensorType.TEMPERATURE, newValue);
@@ -62,9 +67,12 @@ public class SensorDataSimulator {
 
     private void driftHumidity(double intensity) {
         double currentValue = simulationService.getSensorValue(SensorType.HUMIDITY);
-        double driftAmount = (random.nextDouble() - 0.5) * 0.5 * intensity;
+        double driftAmount = (random.nextDouble() - 0.5) * 2.0 * intensity;
 
         double newValue = currentValue + driftAmount;
+        if (!hasActiveDevices()) {
+            newValue = clampOutsideComfort(newValue, 30.0, 45.0);
+        }
         newValue = Math.max(HUMIDITY_DRIFT_MIN, Math.min(HUMIDITY_DRIFT_MAX, newValue));
 
         simulationService.environmentState.put(SensorType.HUMIDITY, newValue);
@@ -73,9 +81,12 @@ public class SensorDataSimulator {
 
     private void driftCO2(double intensity) {
         double currentValue = simulationService.getSensorValue(SensorType.CO2);
-        double growthRate = 10.0 * intensity;
+        double growthRate = (random.nextDouble() * 20.0 + 5.0) * intensity;
 
         double newValue = currentValue + growthRate;
+        if (!hasActiveDevices()) {
+            newValue = Math.max(1000.0, newValue); // Держим выше 1000 ppm
+        }
         newValue = Math.min(CO2_DRIFT_MAX, newValue);
 
         simulationService.environmentState.put(SensorType.CO2, newValue);
@@ -101,5 +112,21 @@ public class SensorDataSimulator {
             sensor.setValue(value);
             sensorsRepository.save(sensor);
         }
+    }
+
+    private boolean hasActiveDevices() {
+        return devicesService.findAll().stream()
+                .anyMatch(device -> device.getStatus() == com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus.ON);
+    }
+
+    private double clampOutsideComfort(double value, double minComfort, double maxComfort) {
+        if (value >= minComfort && value <= maxComfort) {
+            if (Math.abs(value - minComfort) < Math.abs(value - maxComfort)) {
+                return minComfort - 1.0; // Смещаем ниже
+            } else {
+                return maxComfort + 1.0; // Смещаем выше
+            }
+        }
+        return value;
     }
 }

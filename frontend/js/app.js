@@ -1,7 +1,7 @@
 const API_BASE = 'http://localhost:8080';
 let currentUser = null;
 let token = localStorage.getItem('token');
-let smartHomeId = localStorage.getItem('smartHomeId');
+let userId = localStorage.getItem('userId');
 let updateInterval = null;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    if (token && smartHomeId) {
+    if (token && userId) {
         showMainPage();
     } else {
         showLandingPage();

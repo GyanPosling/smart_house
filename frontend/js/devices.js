@@ -1,7 +1,7 @@
 async function loadDevices() {
-    if (!smartHomeId) return;
+    if (!userId) return;
     try {
-        const devices = await apiCall(`/smarthome/${smartHomeId}/devices`);
+        const devices = await apiCall(`/users/${userId}/devices`);
         displayDevices(devices);
         if (currentUser) {
             currentUser.devicesCount = devices.length;
@@ -49,7 +49,7 @@ function displayDevices(devices) {
 
 async function showDeviceDetail(deviceId) {
     try {
-        const device = await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}`);
+        const device = await apiCall(`/users/${userId}/devices/${deviceId}`);
         const detailDiv = document.getElementById('deviceDetailInfo');
 
         detailDiv.innerHTML = `
@@ -62,12 +62,12 @@ async function showDeviceDetail(deviceId) {
             
             ${device.supportsTemperatureControl ?
             `<p><strong>Текущая темп.:</strong> ${device.currentTemperature || '?'}°C</p>
-                 <p><strong>Целевая темп.:</strong> ${device.targetTemperature || '?'}°C</p>`
+             <p><strong>Целевая темп.:</strong> ${device.targetTemperature || '?'}°C</p>`
             : ''}
             
             ${device.supportsHumidityControl ?
             `<p><strong>Текущая влажность:</strong> ${device.currentHumidity || '?'}%</p>
-                 <p><strong>Целевая влажность:</strong> ${device.targetHumidity || '?'}%</p>`
+             <p><strong>Целевая влажность:</strong> ${device.targetHumidity || '?'}%</p>`
             : ''}
 
             <div class="detail-actions">
@@ -92,8 +92,8 @@ async function showDeviceDetail(deviceId) {
 
 async function toggleDeviceStatus(deviceId, newStatus) {
     try {
-        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}/${newStatus.toLowerCase()}`, {
-            method: 'PUT'
+        await apiCall(`/users/${userId}/devices/${deviceId}/${newStatus.toLowerCase()}`, {
+            method: 'PATCH'
         });
         showNotification(`✅ Устройство ${newStatus === 'ON' ? 'включено' : 'выключено'}`);
         hideDeviceDetailModal();
@@ -106,8 +106,8 @@ async function toggleDeviceStatus(deviceId, newStatus) {
 async function setDeviceMode(deviceId, newMode) {
     try {
         const urlPart = newMode === 'AUTO' ? 'auto' : 'manual';
-        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}/${urlPart}`, {
-            method: 'PUT'
+        await apiCall(`/users/${userId}/devices/${deviceId}/${urlPart}`, {
+            method: 'PATCH'
         });
         showNotification(`✅ Режим установлен на ${newMode === 'AUTO' ? 'Автоматический' : 'Ручной'}`);
         hideDeviceDetailModal();
@@ -120,7 +120,7 @@ async function setDeviceMode(deviceId, newMode) {
 async function deleteDevice(deviceId) {
     if (!confirm('Вы уверены, что хотите удалить это устройство?')) return;
     try {
-        await apiCall(`/smarthome/${smartHomeId}/devices/${deviceId}`, {
+        await apiCall(`/users/${userId}/devices/${deviceId}`, {
             method: 'DELETE'
         });
         showNotification('✅ Устройство удалено');
@@ -172,7 +172,7 @@ document.getElementById('addDeviceForm').addEventListener('submit', async (e) =>
             isConnected: true
         };
 
-        await apiCall(`/smarthome/${smartHomeId}/devices`, {
+        await apiCall(`/users/${userId}/devices`, {
             method: 'POST',
             body: JSON.stringify(deviceData)
         });

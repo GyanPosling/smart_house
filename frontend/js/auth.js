@@ -78,10 +78,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
             if (response.ok) {
                 token = data.jwt;
+                userId = data.userId;
                 localStorage.setItem('token', token);
                 localStorage.setItem('username', loginData.name);
-
-                await fetchSmartHomeId(data.userId);
+                localStorage.setItem('userId', userId);
 
                 showMainPage();
                 document.getElementById('loginForm').reset();
@@ -102,20 +102,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         submitBtn.disabled = false;
     }
 });
-
-async function fetchSmartHomeId(userId) {
-    try {
-        const smartHome = await apiCall(`/smarthome/user/${userId}`);
-        smartHomeId = smartHome.id;
-        localStorage.setItem('smartHomeId', smartHomeId);
-        currentUser.smartHomeName = smartHome.name;
-    } catch (error) {
-        console.error('Не удалось загрузить ID умного дома для пользователя:', error);
-        alert('❌ Ошибка: Умный дом не найден или не создан. Обратитесь к администратору.');
-        logout();
-        throw error;
-    }
-}
 
 async function showMainPage() {
     hideAllPages();
@@ -149,7 +135,6 @@ async function loadUserData() {
     currentUser = {
         name: username,
         devicesCount: 0,
-        smartHomeName: currentUser ? currentUser.smartHomeName : 'Загрузка...',
         lastLogin: new Date().toLocaleDateString('ru-RU')
     };
     document.getElementById('userWelcome').textContent = `Добро пожаловать, ${currentUser.name}!`;
@@ -158,9 +143,9 @@ async function loadUserData() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    localStorage.removeItem('smartHomeId');
+    localStorage.removeItem('userId');
     token = null;
-    smartHomeId = null;
+    userId = null;
     currentUser = null;
     if (updateInterval) clearInterval(updateInterval);
     showLandingPage();

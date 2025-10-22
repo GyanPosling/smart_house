@@ -3,13 +3,12 @@ package com.avelina_anton.bzhch.smart_house.demo.controllers;
 import com.avelina_anton.bzhch.smart_house.demo.dto.SensorDTO;
 import com.avelina_anton.bzhch.smart_house.demo.models.Sensor;
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
+import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.services.SensorsService;
-import com.avelina_anton.bzhch.smart_house.demo.services.SmartHomeService;
+import com.avelina_anton.bzhch.smart_house.demo.services.UsersService;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.ErrorsUtil;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.SensorNotFoundException;
 import com.avelina_anton.bzhch.smart_house.demo.utllis.SensorValidator;
-import com.avelina_anton.bzhch.smart_house.demo.utllis.SmartHomeNotFoundException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -21,67 +20,66 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/smarthome/{smartHomeId}/sensors")
+@RequestMapping("/users/{userId}/sensors")
 public class SensorController {
     private final SensorsService sensorsService;
     private final ModelMapper modelMapper;
-    private final SmartHomeService smartHomeService;
+    private final UsersService usersService;
     private final SensorValidator sensorValidator;
 
     public SensorController(SensorsService sensorsService, ModelMapper modelMapper,
-                            SmartHomeService smartHomeService, SensorValidator sensorValidator) {
+                            UsersService usersService, SensorValidator sensorValidator) {
         this.sensorsService = sensorsService;
         this.modelMapper = modelMapper;
-        this.smartHomeService = smartHomeService;
+        this.usersService = usersService;
         this.sensorValidator = sensorValidator;
     }
 
-
-    private SmartHome getSmartHome(Long smartHomeId) {
-        return smartHomeService.findById(smartHomeId)
-                .orElseThrow(() -> new SmartHomeNotFoundException("Умный дом с id " + smartHomeId + " не найден"));
+    private User getUser(Long userId) {
+        return usersService.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь с id " + userId + " не найден"));
     }
-    
+
     @GetMapping
-    public List<SensorDTO> getSmartHomeSensors(@PathVariable Long smartHomeId) {
-        SmartHome smartHome = getSmartHome(smartHomeId);
-        return sensorsService.getSensorsBySmartHome(smartHome).stream()
+    public List<SensorDTO> getUserSensors(@PathVariable Long userId) {
+        User user = getUser(userId);
+        return sensorsService.getSensorsByUser(user).stream()
                 .map(sensor -> modelMapper.map(sensor, SensorDTO.class))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SensorDTO> getSensorById(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<SensorDTO> getSensorById(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
 
         Sensor sensor = sensorsService.getSensorById(id);
 
-        if (!sensor.getSmartHome().getId().equals(smartHomeId)) {
-            throw new SensorNotFoundException("Датчик не принадлежит умному дому с id " + smartHomeId);
+        if (!sensor.getUser().getId().equals(userId)) {
+            throw new SensorNotFoundException("Датчик не принадлежит пользователю с id " + userId);
         }
 
         return ResponseEntity.ok(modelMapper.map(sensor, SensorDTO.class));
     }
 
     @GetMapping("/type/{type}")
-    public List<SensorDTO> getSensorsByType(@PathVariable Long smartHomeId, @PathVariable SensorType type) {
-        SmartHome smartHome = getSmartHome(smartHomeId);
-        return sensorsService.getSensorsBySmartHomeAndType(smartHome, type).stream()
+    public List<SensorDTO> getSensorsByType(@PathVariable Long userId, @PathVariable SensorType type) {
+        User user = getUser(userId);
+        return sensorsService.getSensorsByUserAndType(user, type).stream()
                 .map(sensor -> modelMapper.map(sensor, SensorDTO.class))
                 .collect(Collectors.toList());
     }
 
     @PostMapping
-    public ResponseEntity<SensorDTO> createSensor(@PathVariable Long smartHomeId,
+    public ResponseEntity<SensorDTO> createSensor(@PathVariable Long userId,
                                                   @Valid @RequestBody SensorDTO sensorDTO,
                                                   BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             ErrorsUtil.returnErrorsToClient(bindingResult);
         }
 
-        SmartHome smartHome = getSmartHome(smartHomeId);
+        User user = getUser(userId);
         Sensor sensor = modelMapper.map(sensorDTO, Sensor.class);
-        sensor.setSmartHome(smartHome);
+        sensor.setUser(user);
 
         sensorValidator.validate(sensor, bindingResult);
         if (bindingResult.hasErrors()) {
@@ -94,7 +92,7 @@ public class SensorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SensorDTO> updateSensor(@PathVariable Long smartHomeId,
+    public ResponseEntity<SensorDTO> updateSensor(@PathVariable Long userId,
                                                   @PathVariable Long id,
                                                   @Valid @RequestBody SensorDTO sensorDTO,
                                                   BindingResult bindingResult) {
@@ -102,12 +100,12 @@ public class SensorController {
             ErrorsUtil.returnErrorsToClient(bindingResult);
         }
 
-        getSmartHome(smartHomeId);
+        getUser(userId);
 
         Sensor existingSensor = sensorsService.getSensorById(id);
 
-        if (!existingSensor.getSmartHome().getId().equals(smartHomeId)) {
-            throw new SensorNotFoundException("Датчик не принадлежит умному дому с id " + smartHomeId);
+        if (!existingSensor.getUser().getId().equals(userId)) {
+            throw new SensorNotFoundException("Датчик не принадлежит пользователю с id " + userId);
         }
 
         existingSensor.setType(sensorDTO.getType());
@@ -124,13 +122,13 @@ public class SensorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSensor(@PathVariable Long smartHomeId, @PathVariable Long id) {
-        getSmartHome(smartHomeId);
+    public ResponseEntity<Void> deleteSensor(@PathVariable Long userId, @PathVariable Long id) {
+        getUser(userId);
 
         Sensor sensor = sensorsService.getSensorById(id);
 
-        if (!sensor.getSmartHome().getId().equals(smartHomeId)) {
-            throw new SensorNotFoundException("Датчик не принадлежит умному дому с id " + smartHomeId);
+        if (!sensor.getUser().getId().equals(userId)) {
+            throw new SensorNotFoundException("Датчик не принадлежит пользователю с id " + userId);
         }
 
         sensorsService.deleteSensor(id);

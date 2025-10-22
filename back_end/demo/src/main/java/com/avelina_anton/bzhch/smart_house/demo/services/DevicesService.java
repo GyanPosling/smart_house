@@ -1,6 +1,6 @@
 package com.avelina_anton.bzhch.smart_house.demo.services;
 
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
+import com.avelina_anton.bzhch.smart_house.demo.models.User;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.Device;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceMode;
 import com.avelina_anton.bzhch.smart_house.demo.models.devices.DeviceStatus;
@@ -9,7 +9,6 @@ import com.avelina_anton.bzhch.smart_house.demo.utllis.DeviceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DevicesService {
@@ -24,8 +23,8 @@ public class DevicesService {
         return deviceRepository.findAll();
     }
 
-    public List<Device> findBySmartHome(SmartHome smartHome) {
-        return deviceRepository.findBySmartHome(smartHome);
+    public List<Device> findByUser(User user) {
+        return deviceRepository.findByUser_Id(user.getId());
     }
 
     public Device save(Device device) {

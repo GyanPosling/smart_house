@@ -2,7 +2,6 @@
 package com.avelina_anton.bzhch.smart_house.demo.dto;
 
 import com.avelina_anton.bzhch.smart_house.demo.models.SensorType;
-import com.avelina_anton.bzhch.smart_house.demo.models.SmartHome;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,5 +22,4 @@ public class SensorDTO {
     @Size(min = 2, max = 100, message = "Локация должна быть от 2 до 100 символов")
     private String location;
 
-    private SmartHome smartHome;
 }
