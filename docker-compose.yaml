@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_DB: smart_house_db
+      POSTGRES_DB: smartHomeDB
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Zz3741205  # Твой пароль
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       # ИСПРАВЛЕНО: Путь теперь указывает на tables.sql внутри папки sql/demo
-      - ./back_end/demo/src/main/java/com.avelina_anton.bzhch.smart_house.demo/sql/tables.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./back_end/demo/src/main/java/com/avelina_anton/bzhch/smart_house/demo/sql/tables.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/smart_house_db  # Переопределение для Docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/smartHomeDB
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: Zz3741205
       SPRING_JPA_HIBERNATE_DDL_AUTO: update

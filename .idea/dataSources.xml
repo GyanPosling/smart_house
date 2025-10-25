@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="smart_house_db@localhost" uuid="7c7fbde0-37a8-49cd-8434-805e5422c3b3">
+    <data-source source="LOCAL" name="smartHomeDB@localhost" uuid="155702b1-5ffe-4ac1-861f-d94d5e0a4f76">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/smart_house_db</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/smartHomeDB</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />

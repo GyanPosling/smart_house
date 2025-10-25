@@ -25,7 +25,7 @@ public class SimulationService {
     public SimulationService(SensorsRepository sensorsRepository, DevicesService devicesService) {
         this.sensorsRepository = sensorsRepository;
         this.devicesService = devicesService;
-        // Начальные значения вне зоны комфорта (переопределяются SensorDataSimulator)
+       
         environmentState.put(SensorType.TEMPERATURE, 22.0);
         environmentState.put(SensorType.HUMIDITY, 40.0);
         environmentState.put(SensorType.CO2, 600.0);
