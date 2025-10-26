@@ -4,12 +4,11 @@ services:
     environment:
       POSTGRES_DB: smartHomeDB
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Zz3741205  # Твой пароль
+      POSTGRES_PASSWORD: Zz3741205
     ports:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-      # ИСПРАВЛЕНО: Путь теперь указывает на tables.sql внутри папки sql/demo
       - ./back_end/demo/src/main/java/com/avelina_anton/bzhch/smart_house/demo/sql/tables.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -18,12 +17,9 @@ services:
       retries: 5
 
   backend:
-    # ИСПРАВЛЕНИЕ:
-    # 1. context: Указывает, где лежит код (pom.xml, src)
-    # 2. dockerfile: Указывает, где лежит Dockerfile
     build:
       context: ./back_end/demo
-      dockerfile: ../Dockerfile # Путь к файлу Dockerfile относительно папки demo
+      dockerfile: ../Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -37,6 +33,9 @@ services:
 
   frontend:
     build: ./frontend
+
+    volumes:
+      - ./frontend:/usr/share/nginx/html
     ports:
       - "8081:80"
     depends_on:

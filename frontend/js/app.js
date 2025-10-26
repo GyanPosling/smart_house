@@ -26,6 +26,23 @@ function initializeApp() {
             hideAllModals();
         }
     });
+
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.device-item').forEach(item => {
+        observer.observe(item);
+    });
 }
 
 function showLandingPage() {
@@ -81,8 +98,8 @@ function getSensorStatus(sensor) {
         return 'danger';
     }
     if (sensor.type === 'CO2') {
-        if (sensor.value < 800) return 'good';
-        if (sensor.value < 1000) return 'warning';
+        if (sensor.value <= 1000) return 'good';
+        if (sensor.value <= 1100 && sensor.value > 1000) return 'warning';
         return 'danger';
     }
     return 'good';
@@ -119,4 +136,10 @@ async function apiCall(url, options = {}) {
         console.error('API Call Error:', error);
         throw error;
     }
+}
+
+function scrollToFeatures() {
+    document.getElementById('features').scrollIntoView({
+        behavior: 'smooth'
+    });
 }

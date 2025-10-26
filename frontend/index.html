@@ -10,7 +10,7 @@
 <div id="landingPage" class="landing-container">
     <nav class="landing-nav">
         <div class="nav-brand">
-            <h1>🏠 УмныйДом</h1>
+            <h1>УмныйДом</h1>
         </div>
         <div class="nav-actions">
             <button class="btn btn-outline" onclick="showLogin()">Войти</button>
@@ -24,31 +24,85 @@
                 <h1>Умная система контроля микроклимата</h1>
                 <p class="hero-description">
                     Автоматическое поддержание идеального климата в вашем доме.
-                    Умные датчики следят за температурой, влажностью, качеством воздуха
+                    Умные датчики следят за температурой, влажностью, качеством воздуха
                     и автоматически регулируют работу оборудования.
                 </p>
                 <div class="hero-actions">
                     <button class="btn btn-large btn-primary" onclick="showLogin()">
-                        🚀 Начать использовать
+                        Начать использовать
                     </button>
                     <button class="btn btn-large btn-outline" onclick="scrollToFeatures()">
-                        📋 Узнать больше
+                        Узнать больше
                     </button>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="smart-home-visual">
-                    <div class="house">
-                        <div class="roof"></div>
-                        <div class="walls">
-                            <div class="window"></div>
-                            <div class="door"></div>
-                        </div>
+        </section>
+
+        <section class="devices-showcase">
+            <div class="device-item">
+                <div class="device-image">
+                    <img src="images/Conditioner.jpg" alt="Умный кондиционер">
+                </div>
+                <div class="device-info">
+                    <h3>Умный кондиционер</h3>
+                    <ul>
+                        <li>Автоматическое поддержание температуры</li>
+                        <li>Энергосберегающий режим</li>
+                        <li>Управление со смартфона</li>
+                    </ul>
+                    <div class="optimal-values">
+                        <p>Оптимальная температура: 20-24°C</p>
                     </div>
-                    <div class="sensors">
-                        <div class="sensor temp">🌡️ 22°C</div>
-                        <div class="sensor humidity">💧 45%</div>
-                        <div class="sensor co2">🌫️ 800ppm</div>
+                </div>
+            </div>
+
+            <div class="device-item reverse">
+                <div class="device-image">
+                    <img src="images/Heater.jpg" alt="Умный обогреватель">
+                </div>
+                <div class="device-info">
+                    <h3>Умный обогреватель</h3>
+                    <ul>
+                        <li>Точный контроль температуры</li>
+                        <li>Безопасная работа</li>
+                        <li>Автоматическое отключение</li>
+                    </ul>
+                    <div class="optimal-values">
+                        <p>Оптимальная температура: 20-24°C</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="device-item">
+                <div class="device-image">
+                    <img src="images/Humidifier.jpg" alt="Умный увлажнитель">
+                </div>
+                <div class="device-info">
+                    <h3>Умный увлажнитель</h3>
+                    <ul>
+                        <li>Поддержание идеальной влажности</li>
+                        <li>Тихая работа</li>
+                        <li>Автоматический контроль</li>
+                    </ul>
+                    <div class="optimal-values">
+                        <p>Оптимальная влажность: 30-45%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="device-item reverse">
+                <div class="device-image">
+                    <img src="images/Ventilator.jpg" alt="Умный вентилятор">
+                </div>
+                <div class="device-info">
+                    <h3>Умный вентилятор</h3>
+                    <ul>
+                        <li>Циркуляция воздуха</li>
+                        <li>Регулировка скорости</li>
+                        <li>Таймер работы</li>
+                    </ul>
+                    <div class="optimal-values">
+                        <p>Оптимальный уровень CO₂: до 1000 ppm</p>
                     </div>
                 </div>
             </div>
@@ -58,65 +112,37 @@
             <h2>Как работает умный дом?</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">📊</div>
                     <h3>Непрерывный мониторинг</h3>
                     <p>Датчики постоянно отслеживают температуру, влажность, уровень CO₂ и шума</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
                     <h3>Автоматическое управление</h3>
                     <p>Система автоматически включает обогреватели, кондиционеры, увлажнители</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👨‍💻</div>
                     <h3>Ручное управление</h3>
                     <p>Всегда можно взять контроль на себя и управлять приборами вручную</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📱</div>
                     <h3>Удобный интерфейс</h3>
                     <p>Простое и интуитивное управление через веб-интерфейс с любого устройства</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="tech-section">
-            <h2>Технологии</h2>
-            <div class="tech-stack">
-                <div class="tech-item">
-                    <h4>🌡️ Датчики</h4>
-                    <ul>
-                        <li>Температура: 20-24°C</li>
-                        <li>Влажность: 30-45%</li>
-                        <li>CO₂: до 1000 ppm</li>
-                        <li>Уровень шума</li>
-                    </ul>
-                </div>
-                <div class="tech-item">
-                    <h4>⚡ Приборы</h4>
-                    <ul>
-                        <li>Обогреватели</li>
-                        <li>Кондиционеры</li>
-                        <li>Увлажнители</li>
-                        <li>Осушители</li>
-                        <li>Вентиляторы</li>
-                    </ul>
-                </div>
-                <div class="tech-item">
-                    <h4>🔧 Технологии</h4>
-                    <ul>
-                        <li>Java Spring Boot</li>
-                        <li>PostgreSQL</li>
-                        <li>Docker</li>
-                        <li>REST API</li>
-                    </ul>
                 </div>
             </div>
         </section>
     </main>
 
     <footer class="landing-footer">
-        <p>© 2024 Умная система контроля микроклимата. Все права защищены.</p>
+        <div class="footer-content">
+            <p>© 2025 Умная система контроля микроклимата. Все права защищены.</p>
+            <div class="social-links">
+                <a href="https://t.me/Mr.Havosick" target="_blank" class="social-link">
+                    <img src="images/Telegramm_icon.png" alt="Telegram" class="social-icon">
+                </a>
+                <a href="https://www.instagram.com/aavelinka?igsh=MWh2aGxmOGF5NHZycA==" target="_blank" class="social-link">
+                    <img src="images/Instagram_icon.png" alt="Instagram" class="social-icon">
+                </a>
+            </div>
+        </div>
     </footer>
 </div>
 
@@ -168,11 +194,11 @@
     <div class="container">
         <header class="header">
             <nav class="nav">
-                <h1>🏠 Умный дом - Система контроля микроклимата</h1>
+                <h1>Умный дом - Система контроля микроклимата</h1>
                 <div class="user-info">
                     <span id="userWelcome">Добро пожаловать!</span>
-                    <button class="btn btn-small btn-primary" onclick="showProfile()">👤 Профиль</button>
-                    <button class="btn btn-small btn-secondary" onclick="logout()">🚪 Выйти</button>
+                    <button class="btn btn-small btn-primary" onclick="showProfile()">Профиль</button>
+                    <button class="btn btn-small btn-secondary" onclick="logout()">Выйти</button>
                 </div>
             </nav>
         </header>
@@ -180,22 +206,22 @@
         <div class="main-content">
             <div class="devices-section">
                 <div class="section-header">
-                    <h2>📱 Мои устройства</h2>
-                    <button class="btn btn-primary" onclick="showAddDeviceModal()">➕ Добавить устройство</button>
+                    <h2>Мои устройства</h2>
+                    <button class="btn btn-primary" onclick="showAddDeviceModal()">Добавить устройство</button>
                 </div>
                 <div id="devicesList" class="devices-grid">
                 </div>
             </div>
 
             <div class="sensors-panel">
-                <h3>📊 Датчики</h3>
+                <h3>Датчики</h3>
                 <div id="sensorsData">
                 </div>
                 <div class="comfort-zones">
-                    <h4>⚡ Зоны комфорта</h4>
-                    <p>🌡️ Температура: 20-24°C</p>
-                    <p>💧 Влажность: 30-45%</p>
-                    <p>🌫️ CO₂: < 1000 ppm</p>
+                    <h4>Зоны комфорта</h4>
+                    <p>Температура: 20-24°C</p>
+                    <p>Влажность: 30-45%</p>
+                    <p>CO₂: < 1000 ppm</p>
                 </div>
             </div>
         </div>
@@ -204,7 +230,7 @@
 
 <div id="addDeviceModal" class="modal hidden">
     <div class="modal-content">
-        <h3>➕ Добавить устройство</h3>
+        <h3>Добавить устройство</h3>
         <form id="addDeviceForm">
             <div class="form-group">
                 <label>Название устройства:</label>
@@ -214,11 +240,11 @@
                 <label>Тип устройства:</label>
                 <select id="deviceType" required>
                     <option value="">Выберите тип</option>
-                    <option value="HEATER">🔥 Обогреватель</option>
-                    <option value="AIR_CONDITIONER">❄️ Кондиционер</option>
-                    <option value="HUMIDIFIER">💧 Увлажнитель</option>
-                    <option value="DEHUMIDIFIER">🌬️ Осушитель</option>
-                    <option value="VENTILATOR">💨 Вентилятор</option>
+                    <option value="HEATER">Обогреватель</option>
+                    <option value="AIR_CONDITIONER">Кондиционер</option>
+                    <option value="HUMIDIFIER">Увлажнитель</option>
+                    <option value="DEHUMIDIFIER">Осушитель</option>
+                    <option value="VENTILATOR">Вентилятор</option>
                 </select>
             </div>
             <div class="form-controls">
@@ -231,7 +257,7 @@
 
 <div id="profileModal" class="modal hidden">
     <div class="modal-content">
-        <h3>👤 Профиль пользователя</h3>
+        <h3>Профиль пользователя</h3>
         <div id="profileInfo" class="profile-info">
         </div>
         <button class="btn btn-secondary" onclick="hideProfileModal()">Закрыть</button>
@@ -240,7 +266,7 @@
 
 <div id="deviceDetailModal" class="modal hidden">
     <div class="modal-content">
-        <h3>📱 Информация об устройстве</h3>
+        <h3>Информация об устройстве</h3>
         <div id="deviceDetailInfo">
         </div>
         <button class="btn btn-secondary" onclick="hideDeviceDetailModal()">Закрыть</button>
