@@ -196,25 +196,17 @@ body {
     position: relative;
 }
 
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(245, 241, 232, 0.8);
-    border-radius: 15px;
-}
-
 .hero-content {
     position: relative;
     z-index: 1;
     max-width: 600px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 253, 250, 0.45);
     padding: 40px;
     border-radius: 15px;
     margin-left: 50px;
+    border: 1px solid rgba(255, 250, 240, 0.6);
+    box-shadow: 0 10px 30px rgba(139, 115, 85, 0.15);
+    backdrop-filter: blur(5px);
 }
 
 .hero-content h1 {
@@ -228,7 +220,7 @@ body {
     font-size: 20px;
     margin-bottom: 30px;
     line-height: 1.6;
-    opacity: 0.9;
+    color: #5a4a3a;
 }
 
 .hero-actions {
