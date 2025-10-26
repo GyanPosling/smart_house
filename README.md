@@ -3,7 +3,7 @@
 ## 🧑‍💻 Команда проекта
 
 - ### [Бурш Антон](https://github.com/GyanPosling) - backend developer
-- ### [Климова Авелина](https://github.com/его-username) - the best designer and frontend developer
+- ### [Климова Авелина](https://github.com/aavelinka) - the best designer and frontend developer
 
 ## 📋 О проекте
 
