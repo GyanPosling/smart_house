@@ -4,6 +4,16 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: также можно добавить другие временные файлы
+.DS_Store
+.thumbs.db
+
 ### STS ###
 .apt_generated
 .classpath
